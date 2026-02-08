@@ -123,6 +123,7 @@ const VideoDetailPage = () => {
             <VideoPlayer
               src={video.videoUrl}
               title={video.title}
+              poster={video.thumbnailUrl}
               onProgress={handleProgress}
               onComplete={handleComplete}
               initialTime={progress?.lastPosition}

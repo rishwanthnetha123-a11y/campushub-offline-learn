@@ -122,7 +122,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Mobile Nav */}
         {isMobileMenuOpen && (
           <nav className="md:hidden border-t bg-card animate-slide-in">
-            <div className="container mx-auto px-4 py-2">
+            <div className="container mx-auto px-4 py-2 space-y-1">
               {navItems.map(({ path, label, icon: Icon }) => (
                 <Link
                   key={path}
@@ -139,6 +139,43 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   {label}
                 </Link>
               ))}
+              
+              {/* Admin link in mobile */}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <Shield className="h-5 w-5" />
+                  Admin Dashboard
+                </Link>
+              )}
+              
+              {/* Auth in mobile */}
+              <div className="border-t pt-2 mt-2">
+                {user ? (
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted w-full text-left"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </nav>
         )}

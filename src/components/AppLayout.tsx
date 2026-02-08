@@ -75,8 +75,35 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </nav>
 
           {/* Right section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ConnectionStatus />
+            
+            {/* Admin link for admins */}
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm" className="hidden md:flex gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+            
+            {/* Auth buttons */}
+            {!isLoading && (
+              user ? (
+                <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex gap-2">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="hidden md:flex gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </Button>
+                </Link>
+              )
+            )}
             
             {/* Mobile menu button */}
             <button

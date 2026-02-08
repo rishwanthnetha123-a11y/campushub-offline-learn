@@ -31,8 +31,14 @@ const navItems = [
 
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut, isLoading } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

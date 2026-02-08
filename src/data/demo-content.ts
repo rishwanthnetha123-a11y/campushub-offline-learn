@@ -1,6 +1,8 @@
 // Demo content for CampusHub - Preloaded for offline hackathon demo
 import { Video, Resource, Quiz } from '@/types/content';
 
+// Production-ready demo videos using reliable open-source samples
+// These videos are from Google's sample video bucket - freely available and reliable
 export const demoVideos: Video[] = [
   {
     id: 'v1',
@@ -13,7 +15,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 33554432,
     subject: 'Mathematics',
     topic: 'Algebra Basics',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     instructor: 'Prof. Sharma',
     order: 1,
@@ -29,7 +31,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 29360128,
     subject: 'Science',
     topic: 'Chemistry Basics',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     instructor: 'Dr. Patel',
     order: 2,
@@ -45,7 +47,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 39845888,
     subject: 'English',
     topic: 'Grammar',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     instructor: 'Mrs. Gupta',
     order: 3,
@@ -61,7 +63,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 36700160,
     subject: 'History',
     topic: 'Ancient Civilizations',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
     instructor: 'Dr. Rao',
     order: 4,
@@ -77,7 +79,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 31457280,
     subject: 'Mathematics',
     topic: 'Geometry',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
     instructor: 'Prof. Sharma',
     order: 5,
@@ -93,7 +95,7 @@ export const demoVideos: Video[] = [
     fileSizeBytes: 44040192,
     subject: 'Science',
     topic: 'Biology',
-    thumbnailUrl: '',
+    thumbnailUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
     instructor: 'Dr. Patel',
     order: 6,

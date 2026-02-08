@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Video, 
@@ -7,16 +7,24 @@ import {
   Download,
   GraduationCap,
   Menu,
-  X
+  X,
+  MessageSquare,
+  Shield,
+  LogIn,
+  LogOut,
+  User
 } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';
+import { Button } from './ui/button';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/videos', label: 'Videos', icon: Video },
   { path: '/resources', label: 'Resources', icon: FileText },
+  { path: '/ask', label: 'Ask AI', icon: MessageSquare },
   { path: '/progress', label: 'My Progress', icon: Trophy },
   { path: '/downloads', label: 'Downloads', icon: Download },
 ];

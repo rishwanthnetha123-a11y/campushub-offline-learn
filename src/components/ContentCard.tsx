@@ -66,20 +66,46 @@ export const ContentCard = ({
       onClick={onClick}
     >
       {/* Thumbnail / Icon area */}
-      <div className="relative bg-muted h-32 flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="relative bg-muted h-40 flex items-center justify-center overflow-hidden">
+        {/* Video thumbnail or fallback */}
+        {isVideo && video.thumbnailUrl ? (
+          <img 
+            src={video.thumbnailUrl} 
+            alt={video.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              // Hide broken image and show icon fallback
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : null}
         
-        <Icon className="h-12 w-12 text-muted-foreground/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        
+        {/* Fallback icon (shows when no thumbnail or on load error) */}
+        <Icon className="h-12 w-12 text-muted-foreground/50 relative z-0" />
+        
+        {/* Play button overlay for videos */}
+        {isVideo && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+              <svg className="h-6 w-6 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        )}
         
         {/* Status badge */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 z-10">
           <OfflineStatusBadge 
             status={isDownloaded ? 'offline-ready' : 'not-downloaded'} 
           />
         </div>
 
         {/* Duration / Info */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-2 text-white text-xs">
+        <div className="absolute bottom-2 left-2 flex items-center gap-2 text-white text-xs z-10">
           {isVideo ? (
             <>
               <Clock className="h-3 w-3" />
@@ -98,14 +124,14 @@ export const ContentCard = ({
 
         {/* Progress ring overlay */}
         {learningProgress > 0 && learningProgress < 100 && (
-          <div className="absolute bottom-2 right-2">
+          <div className="absolute bottom-2 right-2 z-10">
             <ProgressRing progress={learningProgress} size={32} strokeWidth={3} />
           </div>
         )}
 
         {/* Completed checkmark */}
         {learningProgress >= 100 && (
-          <div className="absolute bottom-2 right-2 bg-success text-success-foreground rounded-full p-1">
+          <div className="absolute bottom-2 right-2 bg-success text-success-foreground rounded-full p-1 z-10">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>

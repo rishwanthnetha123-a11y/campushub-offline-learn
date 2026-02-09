@@ -101,7 +101,7 @@ const VideosPage = () => {
           >
             All
           </Button>
-          {subjects.map(subject => (
+          {allSubjects.map(subject => (
             <Button
               key={subject}
               variant={selectedSubject === subject ? "default" : "outline"}

@@ -1,9 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Re-export the auto-generated Supabase client
+export { supabase } from '@/integrations/supabase/client';
 
 // Helper to check if user is admin
 export async function checkIsAdmin(userId: string): Promise<boolean> {

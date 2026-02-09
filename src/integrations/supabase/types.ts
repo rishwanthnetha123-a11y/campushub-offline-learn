@@ -14,16 +14,315 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_invites: {
+        Row: {
+          accepted: boolean | null
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          invite_token: string | null
+          invited_by: string | null
+        }
+        Insert: {
+          accepted?: boolean | null
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          invite_token?: string | null
+          invited_by?: string | null
+        }
+        Update: {
+          accepted?: boolean | null
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          invite_token?: string | null
+          invited_by?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          preferred_language: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          preferred_language?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json | null
+          completed_at: string
+          id: string
+          passed: boolean | null
+          quiz_id: string
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string
+          id?: string
+          passed?: boolean | null
+          quiz_id: string
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string
+          id?: string
+          passed?: boolean | null
+          quiz_id?: string
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration: string | null
+          file_size: string | null
+          file_size_bytes: number | null
+          file_url: string
+          id: string
+          is_active: boolean | null
+          pages: number | null
+          subject: string
+          title: string
+          topic: string | null
+          type: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          file_size?: string | null
+          file_size_bytes?: number | null
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          pages?: number | null
+          subject: string
+          title: string
+          topic?: string | null
+          type?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration?: string | null
+          file_size?: string | null
+          file_size_bytes?: number | null
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          pages?: number | null
+          subject?: string
+          title?: string
+          topic?: string | null
+          type?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      student_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          last_position: number | null
+          progress: number | null
+          quiz_completed: boolean | null
+          quiz_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          content_id: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          last_position?: number | null
+          progress?: number | null
+          quiz_completed?: boolean | null
+          quiz_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          last_position?: number | null
+          progress?: number | null
+          quiz_completed?: boolean | null
+          quiz_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_downloads: {
+        Row: {
+          content_id: string
+          content_type: string
+          downloaded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type?: string
+          downloaded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          downloaded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          duration: string | null
+          duration_seconds: number | null
+          file_size: string | null
+          file_size_bytes: number | null
+          id: string
+          instructor: string | null
+          is_active: boolean | null
+          resolution: string | null
+          subject: string
+          thumbnail_url: string | null
+          title: string
+          topic: string | null
+          updated_at: string
+          uploaded_by: string | null
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          duration_seconds?: number | null
+          file_size?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          instructor?: string | null
+          is_active?: boolean | null
+          resolution?: string | null
+          subject: string
+          thumbnail_url?: string | null
+          title: string
+          topic?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          duration_seconds?: number | null
+          file_size?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          instructor?: string | null
+          is_active?: boolean | null
+          resolution?: string | null
+          subject?: string
+          thumbnail_url?: string | null
+          title?: string
+          topic?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +449,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student"],
+    },
   },
 } as const

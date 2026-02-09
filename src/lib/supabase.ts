@@ -4,12 +4,12 @@ export { supabase };
 
 // Helper to check if user is admin
 export async function checkIsAdmin(userId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user_roles' as any)
+  const { data, error } = await (supabase as any)
+    .from('user_roles')
     .select('role')
     .eq('user_id', userId)
     .eq('role', 'admin')
-    .single();
+    .maybeSingle();
   
   return !error && !!data;
 }

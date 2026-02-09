@@ -29,7 +29,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { supabase, Profile, StudentProgress, QuizAttempt, UserDownload } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Profile = Tables<'profiles'>;
+type StudentProgressRow = Tables<'student_progress'>;
+type QuizAttemptRow = Tables<'quiz_attempts'>;
+type UserDownloadRow = Tables<'user_downloads'>;
 
 interface StudentWithStats extends Profile {
   totalProgress: number;
@@ -45,9 +51,9 @@ export function AdminStudents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [studentDetails, setStudentDetails] = useState<{
-    progress: StudentProgress[];
-    quizzes: QuizAttempt[];
-    downloads: UserDownload[];
+    progress: StudentProgressRow[];
+    quizzes: QuizAttemptRow[];
+    downloads: UserDownloadRow[];
   } | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
 

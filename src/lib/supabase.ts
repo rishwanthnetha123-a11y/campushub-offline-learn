@@ -10,11 +10,6 @@ export async function checkIsAdmin(userId: string): Promise<boolean> {
     .eq('user_id', userId)
     .eq('role', 'admin')
     .single();
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .eq('role', 'admin')
-    .single();
   
   return !error && !!data;
 }

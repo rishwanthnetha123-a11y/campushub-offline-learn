@@ -47,7 +47,7 @@ const LANGUAGES = [
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-doubt`;
+import { supabase } from '@/integrations/supabase/client';
 
 const DoubtSolverPage = () => {
   const navigate = useNavigate();

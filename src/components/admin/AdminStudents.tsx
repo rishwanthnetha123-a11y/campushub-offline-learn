@@ -51,9 +51,9 @@ export function AdminStudents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [studentDetails, setStudentDetails] = useState<{
-    progress: StudentProgress[];
-    quizzes: QuizAttempt[];
-    downloads: UserDownload[];
+    progress: StudentProgressRow[];
+    quizzes: QuizAttemptRow[];
+    downloads: UserDownloadRow[];
   } | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
 

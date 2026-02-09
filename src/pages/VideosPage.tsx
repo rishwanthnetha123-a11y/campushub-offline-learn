@@ -77,7 +77,7 @@ const VideosPage = () => {
             Video Library
           </h1>
           <p className="text-muted-foreground">
-            {demoVideos.length} educational videos • Low-resolution for offline use
+            {allVideos.length} educational videos • Low-resolution for offline use
           </p>
         </div>
       </div>

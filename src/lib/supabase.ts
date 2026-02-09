@@ -1,9 +1,15 @@
 // Re-export the auto-generated Supabase client
-export { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
+export { supabase };
 
 // Helper to check if user is admin
 export async function checkIsAdmin(userId: string): Promise<boolean> {
   const { data, error } = await supabase
+    .from('user_roles' as any)
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
+    .single();
     .from('user_roles')
     .select('role')
     .eq('user_id', userId)

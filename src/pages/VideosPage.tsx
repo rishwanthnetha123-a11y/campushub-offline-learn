@@ -1,19 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Video as VideoIcon } from 'lucide-react';
+import { Search, Filter, Video as VideoIcon, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { demoVideos, subjects, demoQuizzes } from '@/data/demo-content';
+import { supabase } from '@/integrations/supabase/client';
+import type { Video } from '@/types/content';
 
 const VideosPage = () => {
   const navigate = useNavigate();
   const { isDownloaded, markAsDownloaded, removeDownload, getProgress, getBestQuizScore } = useOfflineStorage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [dbVideos, setDbVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredVideos = demoVideos.filter(video => {
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && data) {
+        const mapped: Video[] = data.map((v, i) => ({
+          id: v.id,
+          title: v.title,
+          description: v.description || '',
+          duration: v.duration || '0:00',
+          durationSeconds: v.duration_seconds || 0,
+          resolution: (v.resolution as '360p' | '480p') || '360p',
+          fileSize: v.file_size || '0 MB',
+          fileSizeBytes: v.file_size_bytes || 0,
+          subject: v.subject,
+          topic: v.topic || '',
+          thumbnailUrl: v.thumbnail_url || '',
+          videoUrl: v.video_url,
+          instructor: v.instructor || 'Unknown',
+          order: v.display_order || i,
+        }));
+        setDbVideos(mapped);
+      }
+      setLoading(false);
+    };
+    fetchVideos();
+  }, []);
+
+  const allVideos = useMemo(() => [...dbVideos, ...demoVideos], [dbVideos]);
+
+  const allSubjects = useMemo(() => {
+    const s = new Set([...subjects, ...dbVideos.map(v => v.subject)]);
+    return Array.from(s);
+  }, [dbVideos]);
+
+  const filteredVideos = allVideos.filter(video => {
     const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       video.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = !selectedSubject || video.subject === selectedSubject;
@@ -34,7 +77,7 @@ const VideosPage = () => {
             Video Library
           </h1>
           <p className="text-muted-foreground">
-            {demoVideos.length} educational videos • Low-resolution for offline use
+            {allVideos.length} educational videos • Low-resolution for offline use
           </p>
         </div>
       </div>
@@ -58,7 +101,7 @@ const VideosPage = () => {
           >
             All
           </Button>
-          {subjects.map(subject => (
+          {allSubjects.map(subject => (
             <Button
               key={subject}
               variant={selectedSubject === subject ? "default" : "outline"}

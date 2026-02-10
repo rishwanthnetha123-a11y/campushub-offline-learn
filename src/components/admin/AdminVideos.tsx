@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Upload, 
   Video, 
@@ -6,7 +6,8 @@ import {
   Loader2,
   Check,
   X,
-  FileVideo
+  FileVideo,
+  Trash2
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
@@ -35,6 +48,17 @@ interface VideoForm {
   resolution: '360p' | '480p';
 }
 
+interface DBVideo {
+  id: string;
+  title: string;
+  subject: string;
+  duration: string | null;
+  file_size: string | null;
+  instructor: string | null;
+  is_active: boolean | null;
+  created_at: string;
+}
+
 export function AdminVideos() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +68,9 @@ export function AdminVideos() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
+  const [videos, setVideos] = useState<DBVideo[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<VideoForm>({
     title: '',
     description: '',
@@ -52,6 +79,49 @@ export function AdminVideos() {
     instructor: '',
     resolution: '360p',
   });
+
+  useEffect(() => {
+    fetchVideos();
+  }, []);
+
+  const fetchVideos = async () => {
+    const { data, error } = await supabase
+      .from('videos')
+      .select('id, title, subject, duration, file_size, instructor, is_active, created_at')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setVideos(data);
+    }
+    setLoadingVideos(false);
+  };
+
+  const handleDeleteVideo = async (videoId: string) => {
+    setDeletingId(videoId);
+    try {
+      const { error } = await supabase
+        .from('videos')
+        .delete()
+        .eq('id', videoId);
+
+      if (error) throw error;
+
+      setVideos(prev => prev.filter(v => v.id !== videoId));
+      toast({
+        title: 'Video deleted',
+        description: 'The video has been removed from the library.',
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Could not delete the video.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -122,10 +192,7 @@ export function AdminVideos() {
     setUploadProgress(0);
 
     try {
-      // Get video duration
       const duration = await getVideoDuration(selectedFile);
-      
-      // Generate unique filename
       const timestamp = Date.now();
       const videoFileName = `${timestamp}-${selectedFile.name}`;
       const thumbnailFileName = selectedThumbnail 
@@ -134,7 +201,6 @@ export function AdminVideos() {
 
       setUploadProgress(10);
 
-      // Upload video to storage
       const { data: videoData, error: videoError } = await supabase.storage
         .from('videos')
         .upload(videoFileName, selectedFile, {
@@ -145,7 +211,6 @@ export function AdminVideos() {
       if (videoError) throw videoError;
       setUploadProgress(60);
 
-      // Upload thumbnail if provided
       let thumbnailUrl = '';
       if (selectedThumbnail && thumbnailFileName) {
         const { data: thumbData, error: thumbError } = await supabase.storage
@@ -164,12 +229,10 @@ export function AdminVideos() {
       }
       setUploadProgress(80);
 
-      // Get video public URL
       const { data: { publicUrl: videoUrl } } = supabase.storage
         .from('videos')
         .getPublicUrl(videoFileName);
 
-      // Insert video record into database
       const { error: dbError } = await supabase
         .from('videos')
         .insert({
@@ -196,7 +259,7 @@ export function AdminVideos() {
         description: `"${form.title}" has been added to the ${form.subject} library.`,
       });
 
-      // Reset form
+      // Reset form & refresh list
       setForm({
         title: '',
         description: '',
@@ -209,6 +272,7 @@ export function AdminVideos() {
       setSelectedThumbnail(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       if (thumbnailInputRef.current) thumbnailInputRef.current.value = '';
+      fetchVideos();
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -225,6 +289,87 @@ export function AdminVideos() {
 
   return (
     <div className="space-y-6">
+      {/* Existing Videos List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Video className="h-5 w-5" />
+            Manage Videos
+          </CardTitle>
+          <CardDescription>
+            {videos.length} videos in the library
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingVideos ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : videos.length === 0 ? (
+            <p className="text-center text-muted-foreground py-6">
+              No videos uploaded yet. Use the form below to add videos.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{video.title}</p>
+                      <Badge variant="outline" className="shrink-0">
+                        {video.subject}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                      {video.instructor && <span>{video.instructor}</span>}
+                      {video.duration && <span>{video.duration}</span>}
+                      {video.file_size && <span>{video.file_size}</span>}
+                    </div>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        disabled={deletingId === video.id}
+                      >
+                        {deletingId === video.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{video.title}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteVideo(video.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Upload Form */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

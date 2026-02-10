@@ -87,21 +87,21 @@ export const useOfflineStorage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const dbUpdates: Record<string, any> = {
+      const dbUpdates = {
         user_id: user.id,
         content_id: contentId,
         content_type: contentType,
+        ...(updates.progress !== undefined && { progress: updates.progress }),
+        ...(updates.completed !== undefined && { completed: updates.completed }),
+        ...(updates.completedAt && { completed_at: updates.completedAt }),
+        ...(updates.lastPosition !== undefined && { last_position: Math.floor(updates.lastPosition) }),
+        ...(updates.quizCompleted !== undefined && { quiz_completed: updates.quizCompleted }),
+        ...(updates.quizScore !== undefined && { quiz_score: updates.quizScore }),
       };
-      if (updates.progress !== undefined) dbUpdates.progress = updates.progress;
-      if (updates.completed !== undefined) dbUpdates.completed = updates.completed;
-      if (updates.completedAt) dbUpdates.completed_at = updates.completedAt;
-      if (updates.lastPosition !== undefined) dbUpdates.last_position = Math.floor(updates.lastPosition);
-      if (updates.quizCompleted !== undefined) dbUpdates.quiz_completed = updates.quizCompleted;
-      if (updates.quizScore !== undefined) dbUpdates.quiz_score = updates.quizScore;
 
-      await supabase
+      await (supabase as any)
         .from('student_progress')
-        .upsert(dbUpdates, { onConflict: 'user_id,content_id' });
+        .upsert(dbUpdates, { onConflict: 'user_id,content_id,content_type' });
     } catch (err) {
       console.error('Failed to sync progress to DB:', err);
     }

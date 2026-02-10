@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -7,7 +7,8 @@ import {
   Clock, 
   User,
   BookOpen,
-  Trophy
+  Trophy,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,7 +19,9 @@ import { OfflineStatusBadge } from '@/components/OfflineStatusBadge';
 import { ProgressRing } from '@/components/ProgressRing';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { demoVideos, demoQuizzes } from '@/data/demo-content';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import type { Video } from '@/types/content';
 
 const VideoDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,11 +39,66 @@ const VideoDetailPage = () => {
   } = useOfflineStorage();
 
   const [showQuiz, setShowQuiz] = useState(false);
+  const [video, setVideo] = useState<Video | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
-  const video = demoVideos.find(v => v.id === id);
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    // First check demo videos
+    const demoVideo = demoVideos.find(v => v.id === id);
+    if (demoVideo) {
+      setVideo(demoVideo);
+      setLoading(false);
+      return;
+    }
+
+    // Then fetch from database
+    const fetchVideo = async () => {
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!error && data) {
+        setVideo({
+          id: data.id,
+          title: data.title,
+          description: data.description || '',
+          duration: data.duration || '0:00',
+          durationSeconds: data.duration_seconds || 0,
+          resolution: (data.resolution as '360p' | '480p') || '360p',
+          fileSize: data.file_size || '0 MB',
+          fileSizeBytes: data.file_size_bytes || 0,
+          subject: data.subject,
+          topic: data.topic || '',
+          thumbnailUrl: data.thumbnail_url || '',
+          videoUrl: data.video_url,
+          instructor: data.instructor || 'Unknown',
+          order: data.display_order || 0,
+        });
+      }
+      setLoading(false);
+    };
+    fetchVideo();
+  }, [id]);
+
   const quiz = demoQuizzes.find(q => q.contentId === id);
   const progress = getProgress(id || '');
   const bestQuizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!video) {
     return (

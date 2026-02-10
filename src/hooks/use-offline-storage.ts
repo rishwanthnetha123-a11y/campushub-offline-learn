@@ -213,8 +213,11 @@ export const useOfflineStorage = () => {
       return newProgress;
     });
 
+    // Sync to database
+    syncProgressToDb(contentId, contentType, updates);
+
     addToSyncQueue({ action: 'progress', data: { contentId, contentType, updates } });
-  }, [addToSyncQueue]);
+  }, [addToSyncQueue, syncProgressToDb]);
 
   const getProgress = useCallback((contentId: string): LearningProgress | undefined => {
     return progress.find(p => p.contentId === contentId);

@@ -245,10 +245,13 @@ export const useOfflineStorage = () => {
       return updated;
     });
 
+    // Sync to database
+    syncQuizToDb(newAttempt);
+
     addToSyncQueue({ action: 'quiz', data: newAttempt });
 
     return newAttempt;
-  }, [addToSyncQueue]);
+  }, [addToSyncQueue, syncQuizToDb]);
 
   const getQuizAttempts = useCallback((quizId: string): QuizAttempt[] => {
     return quizAttempts.filter(a => a.quizId === quizId);

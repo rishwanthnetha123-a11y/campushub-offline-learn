@@ -68,15 +68,64 @@ export const useOfflineStorage = () => {
     if (syncQueue.length === 0) return;
     
     setIsSyncing(true);
-    // In a real app, this would sync with backend
-    // For demo, we just clear the queue after a delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Clear queue - individual writes happen inline now
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     setSyncQueue([]);
     localStorage.setItem(STORAGE_KEYS.SYNC_QUEUE, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
     setIsSyncing(false);
   };
+
+  // Helper to sync progress to database
+  const syncProgressToDb = useCallback(async (
+    contentId: string,
+    contentType: 'video' | 'resource',
+    updates: Partial<LearningProgress>
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const dbUpdates: Record<string, any> = {
+        user_id: user.id,
+        content_id: contentId,
+        content_type: contentType,
+      };
+      if (updates.progress !== undefined) dbUpdates.progress = updates.progress;
+      if (updates.completed !== undefined) dbUpdates.completed = updates.completed;
+      if (updates.completedAt) dbUpdates.completed_at = updates.completedAt;
+      if (updates.lastPosition !== undefined) dbUpdates.last_position = Math.floor(updates.lastPosition);
+      if (updates.quizCompleted !== undefined) dbUpdates.quiz_completed = updates.quizCompleted;
+      if (updates.quizScore !== undefined) dbUpdates.quiz_score = updates.quizScore;
+
+      await supabase
+        .from('student_progress')
+        .upsert(dbUpdates, { onConflict: 'user_id,content_id' });
+    } catch (err) {
+      console.error('Failed to sync progress to DB:', err);
+    }
+  }, []);
+
+  // Helper to sync quiz attempt to database
+  const syncQuizToDb = useCallback(async (attempt: QuizAttempt) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('quiz_attempts')
+        .insert({
+          user_id: user.id,
+          quiz_id: attempt.quizId,
+          answers: attempt.answers,
+          score: attempt.score,
+          passed: attempt.passed,
+        });
+    } catch (err) {
+      console.error('Failed to sync quiz attempt to DB:', err);
+    }
+  }, []);
 
   const addToSyncQueue = useCallback((item: Omit<SyncQueueItem, 'id' | 'createdAt' | 'retries'>) => {
     const newItem: SyncQueueItem = {

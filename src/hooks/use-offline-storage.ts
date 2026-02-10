@@ -1,4 +1,4 @@
-// Offline Storage Hook - LocalStorage based with sync queue
+// Offline Storage Hook - LocalStorage based with DB sync
 import { useState, useEffect, useCallback } from 'react';
 import { 
   DownloadedContent, 
@@ -7,6 +7,7 @@ import {
   QuizAttempt,
   OfflineStatus 
 } from '@/types/content';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEYS = {
   DOWNLOADS: 'campushub_downloads',

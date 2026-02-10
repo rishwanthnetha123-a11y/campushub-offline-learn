@@ -1,4 +1,4 @@
-// Offline Storage Hook - LocalStorage based with sync queue
+// Offline Storage Hook - LocalStorage based with DB sync
 import { useState, useEffect, useCallback } from 'react';
 import { 
   DownloadedContent, 
@@ -7,6 +7,7 @@ import {
   QuizAttempt,
   OfflineStatus 
 } from '@/types/content';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEYS = {
   DOWNLOADS: 'campushub_downloads',
@@ -67,15 +68,64 @@ export const useOfflineStorage = () => {
     if (syncQueue.length === 0) return;
     
     setIsSyncing(true);
-    // In a real app, this would sync with backend
-    // For demo, we just clear the queue after a delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Clear queue - individual writes happen inline now
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     setSyncQueue([]);
     localStorage.setItem(STORAGE_KEYS.SYNC_QUEUE, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
     setIsSyncing(false);
   };
+
+  // Helper to sync progress to database
+  const syncProgressToDb = useCallback(async (
+    contentId: string,
+    contentType: 'video' | 'resource',
+    updates: Partial<LearningProgress>
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const dbUpdates = {
+        user_id: user.id,
+        content_id: contentId,
+        content_type: contentType,
+        ...(updates.progress !== undefined && { progress: updates.progress }),
+        ...(updates.completed !== undefined && { completed: updates.completed }),
+        ...(updates.completedAt && { completed_at: updates.completedAt }),
+        ...(updates.lastPosition !== undefined && { last_position: Math.floor(updates.lastPosition) }),
+        ...(updates.quizCompleted !== undefined && { quiz_completed: updates.quizCompleted }),
+        ...(updates.quizScore !== undefined && { quiz_score: updates.quizScore }),
+      };
+
+      await (supabase as any)
+        .from('student_progress')
+        .upsert(dbUpdates, { onConflict: 'user_id,content_id,content_type' });
+    } catch (err) {
+      console.error('Failed to sync progress to DB:', err);
+    }
+  }, []);
+
+  // Helper to sync quiz attempt to database
+  const syncQuizToDb = useCallback(async (attempt: QuizAttempt) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('quiz_attempts')
+        .insert({
+          user_id: user.id,
+          quiz_id: attempt.quizId,
+          answers: attempt.answers,
+          score: attempt.score,
+          passed: attempt.passed,
+        });
+    } catch (err) {
+      console.error('Failed to sync quiz attempt to DB:', err);
+    }
+  }, []);
 
   const addToSyncQueue = useCallback((item: Omit<SyncQueueItem, 'id' | 'createdAt' | 'retries'>) => {
     const newItem: SyncQueueItem = {
@@ -163,8 +213,11 @@ export const useOfflineStorage = () => {
       return newProgress;
     });
 
+    // Sync to database
+    syncProgressToDb(contentId, contentType, updates);
+
     addToSyncQueue({ action: 'progress', data: { contentId, contentType, updates } });
-  }, [addToSyncQueue]);
+  }, [addToSyncQueue, syncProgressToDb]);
 
   const getProgress = useCallback((contentId: string): LearningProgress | undefined => {
     return progress.find(p => p.contentId === contentId);
@@ -192,10 +245,13 @@ export const useOfflineStorage = () => {
       return updated;
     });
 
+    // Sync to database
+    syncQuizToDb(newAttempt);
+
     addToSyncQueue({ action: 'quiz', data: newAttempt });
 
     return newAttempt;
-  }, [addToSyncQueue]);
+  }, [addToSyncQueue, syncQuizToDb]);
 
   const getQuizAttempts = useCallback((quizId: string): QuizAttempt[] => {
     return quizAttempts.filter(a => a.quizId === quizId);

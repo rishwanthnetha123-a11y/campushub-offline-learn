@@ -49,7 +49,7 @@ const VideosPage = () => {
     fetchVideos();
   }, []);
 
-  const allVideos = useMemo(() => [...dbVideos, ...demoVideos], [dbVideos]);
+  const allVideos = useMemo(() => [...dbVideos], [dbVideos]);
 
   const allSubjects = useMemo(() => {
     const s = new Set([...subjects, ...dbVideos.map(v => v.subject)]);

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,11 @@ const AuthPage = () => {
     email: '',
     password: '',
     fullName: '',
+    phone: '',
   });
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
 
   const redirectTo = searchParams.get('redirect') || '/';
 
@@ -68,6 +73,55 @@ const AuthPage = () => {
     setIsLoading(false);
   };
 
+  const handlePhoneSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!otpSent) {
+      // Send OTP
+      const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
+      const { error } = await supabase.auth.signInWithOtp({ phone });
+
+      if (error) {
+        toast({
+          title: 'Failed to send OTP',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        setOtpSent(true);
+        toast({
+          title: 'OTP sent!',
+          description: 'Check your phone for the verification code.',
+        });
+      }
+    } else {
+      // Verify OTP
+      const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
+      const { error } = await supabase.auth.verifyOtp({
+        phone,
+        token: otp,
+        type: 'sms',
+      });
+
+      if (error) {
+        toast({
+          title: 'Verification failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Welcome!',
+          description: 'Successfully signed in.',
+        });
+        navigate(redirectTo);
+      }
+    }
+
+    setIsLoading(false);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -91,15 +145,84 @@ const AuthPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                <div className="space-y-2">
+          {/* Auth Mode Toggle */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={authMode === 'email' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => { setAuthMode('email'); setOtpSent(false); }}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Email
+            </Button>
+            <Button
+              variant={authMode === 'phone' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => { setAuthMode('phone'); setOtpSent(false); }}
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              Mobile
+            </Button>
+          </div>
+
+          {authMode === 'phone' ? (
+            <form onSubmit={handlePhoneSignIn} className="space-y-4">
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="tel"
+                  placeholder="Mobile number (e.g., 9876543210)"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="pl-10"
+                  disabled={otpSent}
+                  required
+                />
+              </div>
+              {otpSent && (
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="pl-10"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+              )}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                )}
+                {otpSent ? 'Verify OTP' : 'Send OTP'}
+              </Button>
+              {otpSent && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => { setOtpSent(false); setOtp(''); }}
+                >
+                  Change number
+                </Button>
+              )}
+            </form>
+          ) : (
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -111,8 +234,6 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -124,21 +245,19 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                  )}
-                  Sign In
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                <div className="space-y-2">
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <ArrowRight className="h-4 w-4 mr-2" />
+                    )}
+                    Sign In
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4 mt-4">
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -149,8 +268,6 @@ const AuthPage = () => {
                       className="pl-10"
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -162,8 +279,6 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -176,18 +291,18 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                  )}
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <ArrowRight className="h-4 w-4 mr-2" />
+                    )}
+                    Create Account
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>

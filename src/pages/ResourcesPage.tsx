@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, Music, StickyNote } from 'lucide-react';
+import { Search, FileText, Music, StickyNote, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
-import { demoResources, subjects } from '@/data/demo-content';
+import { subjects } from '@/data/demo-content';
+import { supabase } from '@/integrations/supabase/client';
+import type { Resource } from '@/types/content';
 
 const resourceTypeIcons = {
   pdf: FileText,
@@ -19,8 +21,38 @@ const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [dbResources, setDbResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredResources = demoResources.filter(resource => {
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data, error } = await supabase
+        .from('resources')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setDbResources(data.map(r => ({
+          id: r.id,
+          title: r.title,
+          description: r.description || '',
+          type: r.type as 'pdf' | 'notes' | 'audio',
+          fileSize: r.file_size || '',
+          fileSizeBytes: r.file_size_bytes || 0,
+          subject: r.subject,
+          topic: r.topic || '',
+          fileUrl: r.file_url,
+          pages: r.pages || undefined,
+          duration: r.duration || undefined,
+        })));
+      }
+      setLoading(false);
+    };
+    fetchResources();
+  }, []);
+
+  const filteredResources = dbResources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = !selectedSubject || resource.subject === selectedSubject;
@@ -42,7 +74,7 @@ const ResourcesPage = () => {
             Learning Resources
           </h1>
           <p className="text-muted-foreground">
-            {demoResources.length} resources • PDFs, notes, and audio materials
+            {dbResources.length} resources • PDFs, notes, and audio materials
           </p>
         </div>
       </div>

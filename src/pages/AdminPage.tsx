@@ -23,6 +23,7 @@ import { supabase } from '@/lib/supabase';
 import { AdminStudents } from '@/components/admin/AdminStudents';
 import { AdminVideos } from '@/components/admin/AdminVideos';
 import { AdminInvites } from '@/components/admin/AdminInvites';
+import { AdminResources } from '@/components/admin/AdminResources';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -178,18 +179,22 @@ const AdminPage = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="students" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto">
             <TabsTrigger value="students" className="gap-2 py-3">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Students</span>
             </TabsTrigger>
             <TabsTrigger value="videos" className="gap-2 py-3">
-              <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Upload Videos</span>
+              <Video className="h-4 w-4" />
+              <span className="hidden sm:inline">Videos</span>
+            </TabsTrigger>
+            <TabsTrigger value="resources" className="gap-2 py-3">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Resources</span>
             </TabsTrigger>
             <TabsTrigger value="invites" className="gap-2 py-3">
               <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Invites</span>
+              <span className="hidden sm:inline">Invites</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
@@ -203,6 +208,10 @@ const AdminPage = () => {
 
           <TabsContent value="videos">
             <AdminVideos />
+          </TabsContent>
+
+          <TabsContent value="resources">
+            <AdminResources />
           </TabsContent>
 
           <TabsContent value="invites">

@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';
 import { Button } from './ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
+import campusHubLogo from '@/assets/campus-hub-logo.png';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -46,9 +47,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src={campusHubLogo} alt="CampusHub" className="w-10 h-10 rounded-lg object-contain" />
             <div>
               <h1 className="font-bold text-lg text-foreground">CampusHub</h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Offline Learning</p>

@@ -47,6 +47,19 @@ const LANGUAGES = [
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
 
+const UI_TRANSLATIONS: Record<string, { title: string; subtitle: string; placeholder: string; askTitle: string; askDesc: string; thinking: string; anySubject: string }> = {
+  en: { title: 'AI Doubt Solver', subtitle: 'Ask any question in your preferred language', placeholder: 'Type your question here...', askTitle: 'Ask Your Doubts', askDesc: 'Type any question about your studies. I can explain concepts, solve problems, and help you understand difficult topics.', thinking: 'Thinking...', anySubject: 'Any subject' },
+  hi: { title: 'AI संदेह समाधानकर्ता', subtitle: 'अपनी पसंदीदा भाषा में कोई भी प्रश्न पूछें', placeholder: 'अपना प्रश्न यहाँ टाइप करें...', askTitle: 'अपने संदेह पूछें', askDesc: 'अपनी पढ़ाई के बारे में कोई भी प्रश्न टाइप करें।', thinking: 'सोच रहा हूँ...', anySubject: 'कोई भी विषय' },
+  ta: { title: 'AI சந்தேக தீர்வு', subtitle: 'உங்கள் விருப்பமான மொழியில் கேள்வி கேளுங்கள்', placeholder: 'உங்கள் கேள்வியை இங்கே தட்டச்சு செய்யுங்கள்...', askTitle: 'உங்கள் சந்தேகங்களைக் கேளுங்கள்', askDesc: 'உங்கள் படிப்பு பற்றிய எந்த கேள்வியையும் தட்டச்சு செய்யுங்கள்.', thinking: 'சிந்திக்கிறது...', anySubject: 'எந்த பாடமும்' },
+  te: { title: 'AI సందేహ పరిష్కారం', subtitle: 'మీ ఇష్టమైన భాషలో ఏదైనా ప్రశ్న అడగండి', placeholder: 'మీ ప్రశ్నను ఇక్కడ టైప్ చేయండి...', askTitle: 'మీ సందేహాలను అడగండి', askDesc: 'మీ చదువు గురించి ఏదైనా ప్రశ్న టైప్ చేయండి.', thinking: 'ఆలోచిస్తోంది...', anySubject: 'ఏదైనా విషయం' },
+  kn: { title: 'AI ಸಂದೇಹ ಪರಿಹಾರ', subtitle: 'ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯಲ್ಲಿ ಪ್ರಶ್ನೆ ಕೇಳಿ', placeholder: 'ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ...', askTitle: 'ನಿಮ್ಮ ಸಂದೇಹಗಳನ್ನು ಕೇಳಿ', askDesc: 'ನಿಮ್ಮ ಅಧ್ಯಯನದ ಬಗ್ಗೆ ಯಾವುದೇ ಪ್ರಶ್ನೆ ಟೈಪ್ ಮಾಡಿ.', thinking: 'ಯೋಚಿಸುತ್ತಿದೆ...', anySubject: 'ಯಾವುದೇ ವಿಷಯ' },
+  mr: { title: 'AI शंका निवारक', subtitle: 'तुमच्या पसंतीच्या भाषेत प्रश्न विचारा', placeholder: 'तुमचा प्रश्न इथे टाइप करा...', askTitle: 'तुमच्या शंका विचारा', askDesc: 'तुमच्या अभ्यासाबद्दल कोणताही प्रश्न टाइप करा.', thinking: 'विचार करत आहे...', anySubject: 'कोणताही विषय' },
+  bn: { title: 'AI সন্দেহ সমাধানকারী', subtitle: 'আপনার পছন্দের ভাষায় যেকোনো প্রশ্ন জিজ্ঞাসা করুন', placeholder: 'আপনার প্রশ্ন এখানে টাইপ করুন...', askTitle: 'আপনার সন্দেহ জিজ্ঞাসা করুন', askDesc: 'আপনার পড়াশোনা সম্পর্কে যেকোনো প্রশ্ন টাইপ করুন।', thinking: 'চিন্তা করছে...', anySubject: 'যেকোনো বিষয়' },
+  gu: { title: 'AI શંકા નિવારક', subtitle: 'તમારી પસંદગીની ભાષામાં પ્રશ્ન પૂછો', placeholder: 'તમારો પ્રશ્ન અહીં ટાઈપ કરો...', askTitle: 'તમારી શંકાઓ પૂછો', askDesc: 'તમારા અભ્યાસ વિશે કોઈપણ પ્રશ્ન ટાઈપ કરો.', thinking: 'વિચારી રહ્યું છે...', anySubject: 'કોઈપણ વિષય' },
+  ml: { title: 'AI സംശയ പരിഹാരം', subtitle: 'നിങ്ങളുടെ ഇഷ്ട ഭാഷയിൽ ചോദ്യം ചോദിക്കൂ', placeholder: 'നിങ്ങളുടെ ചോദ്യം ഇവിടെ ടൈപ്പ് ചെയ്യുക...', askTitle: 'നിങ്ങളുടെ സംശയങ്ങൾ ചോദിക്കൂ', askDesc: 'നിങ്ങളുടെ പഠനത്തെക്കുറിച്ചുള്ള ഏതെങ്കിലും ചോദ്യം ടൈപ്പ് ചെയ്യുക.', thinking: 'ചിന്തിക്കുന്നു...', anySubject: 'ഏത് വിഷയവും' },
+  pa: { title: 'AI ਸ਼ੰਕਾ ਹੱਲਕਰਤਾ', subtitle: 'ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਵਿੱਚ ਸਵਾਲ ਪੁੱਛੋ', placeholder: 'ਆਪਣਾ ਸਵਾਲ ਇੱਥੇ ਟਾਈਪ ਕਰੋ...', askTitle: 'ਆਪਣੇ ਸ਼ੰਕੇ ਪੁੱਛੋ', askDesc: 'ਆਪਣੀ ਪੜ੍ਹਾਈ ਬਾਰੇ ਕੋਈ ਵੀ ਸਵਾਲ ਟਾਈਪ ਕਰੋ।', thinking: 'ਸੋਚ ਰਿਹਾ ਹੈ...', anySubject: 'ਕੋਈ ਵੀ ਵਿਸ਼ਾ' },
+};
+
 import { supabase } from '@/integrations/supabase/client';
 
 const DoubtSolverPage = () => {
@@ -60,7 +73,9 @@ const DoubtSolverPage = () => {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [language, setLanguage] = useState('en');
-  const [subject, setSubject] = useState('');
+  const [subject, setSubject] = useState('any');
+
+  const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -101,7 +116,7 @@ const DoubtSolverPage = () => {
           body: JSON.stringify({
             messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
             language,
-            subject: subject || undefined,
+            subject: subject === 'any' ? undefined : subject,
           }),
         }
       );
@@ -211,10 +226,10 @@ const DoubtSolverPage = () => {
           <div>
             <h1 className="text-heading text-foreground flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
-              AI Doubt Solver
+              {t.title}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Ask any question in your preferred language
+              {t.subtitle}
             </p>
           </div>
         </div>
@@ -242,7 +257,7 @@ const DoubtSolverPage = () => {
             <SelectValue placeholder="Subject (optional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Any subject</SelectItem>
+            <SelectItem value="any">{t.anySubject}</SelectItem>
             {SUBJECTS.map((subj) => (
               <SelectItem key={subj} value={subj}>
                 {subj}
@@ -262,10 +277,9 @@ const DoubtSolverPage = () => {
                   <MessageSquare className="h-10 w-10 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">Ask Your Doubts</h3>
+                  <h3 className="font-semibold text-lg">{t.askTitle}</h3>
                   <p className="text-muted-foreground max-w-md">
-                    Type any question about your studies. I can explain concepts, 
-                    solve problems, and help you understand difficult topics.
+                    {t.askDesc}
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -326,7 +340,7 @@ const DoubtSolverPage = () => {
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   </div>
                   <div className="bg-muted rounded-2xl px-4 py-3">
-                    <span className="text-muted-foreground">Thinking...</span>
+                    <span className="text-muted-foreground">{t.thinking}</span>
                   </div>
                 </div>
               )}
@@ -339,7 +353,7 @@ const DoubtSolverPage = () => {
           <div className="flex gap-2">
             <Textarea
               ref={textareaRef}
-              placeholder="Type your question here..."
+              placeholder={t.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}

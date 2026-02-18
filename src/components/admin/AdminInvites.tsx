@@ -60,7 +60,18 @@ export function AdminInvites() {
         body: { action: 'create', email },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Try to parse the error context for a better message
+        const errorMsg = typeof error === 'object' && 'message' in error 
+          ? error.message 
+          : String(error);
+        toast({
+          title: 'Failed to send invite',
+          description: errorMsg,
+          variant: 'destructive',
+        });
+        return;
+      }
 
       if (data?.error) {
         toast({

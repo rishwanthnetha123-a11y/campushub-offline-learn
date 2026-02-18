@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, Music, StickyNote, Loader2 } from 'lucide-react';
+import { Search, FileText, Music, StickyNote, Loader2, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { subjects } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
+import { CONTENT_LANGUAGES } from '@/lib/languages';
 import type { Resource } from '@/types/content';
 
 const resourceTypeIcons = {
@@ -21,6 +22,7 @@ const ResourcesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [dbResources, setDbResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +47,7 @@ const ResourcesPage = () => {
           fileUrl: r.file_url,
           pages: r.pages || undefined,
           duration: r.duration || undefined,
+          language: (r as any).language || 'en',
         })));
       }
       setLoading(false);
@@ -57,7 +60,8 @@ const ResourcesPage = () => {
       resource.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = !selectedSubject || resource.subject === selectedSubject;
     const matchesType = !selectedType || resource.type === selectedType;
-    return matchesSearch && matchesSubject && matchesType;
+    const matchesLanguage = !selectedLanguage || resource.language === selectedLanguage;
+    return matchesSearch && matchesSubject && matchesType && matchesLanguage;
   });
 
   const handleResourceClick = (resourceId: string) => {
@@ -133,6 +137,28 @@ const ResourcesPage = () => {
               onClick={() => setSelectedSubject(subject)}
             >
               {subject}
+            </Button>
+          ))}
+        </div>
+
+        {/* Language Filter */}
+        <div className="flex gap-2 flex-wrap items-center">
+          <Globe className="h-4 w-4 text-muted-foreground mr-1" />
+          <Button
+            variant={selectedLanguage === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedLanguage(null)}
+          >
+            All Languages
+          </Button>
+          {CONTENT_LANGUAGES.slice(0, 5).map(lang => (
+            <Button
+              key={lang.code}
+              variant={selectedLanguage === lang.code ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedLanguage(lang.code)}
+            >
+              {lang.nativeName}
             </Button>
           ))}
         </div>

@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Video as VideoIcon, Loader2 } from 'lucide-react';
+import { Search, Filter, Video as VideoIcon, Loader2, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { demoVideos, subjects, demoQuizzes } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
+import { CONTENT_LANGUAGES, getLanguageName } from '@/lib/languages';
 import type { Video } from '@/types/content';
 
 const VideosPage = () => {
@@ -14,6 +15,7 @@ const VideosPage = () => {
   const { isDownloaded, markAsDownloaded, removeDownload, getProgress, getBestQuizScore } = useOfflineStorage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [dbVideos, setDbVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,6 +43,7 @@ const VideosPage = () => {
           videoUrl: v.video_url,
           instructor: v.instructor || 'Unknown',
           order: v.display_order || i,
+          language: (v as any).language || 'en',
         }));
         setDbVideos(mapped);
       }
@@ -60,7 +63,8 @@ const VideosPage = () => {
     const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       video.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = !selectedSubject || video.subject === selectedSubject;
-    return matchesSearch && matchesSubject;
+    const matchesLanguage = !selectedLanguage || video.language === selectedLanguage;
+    return matchesSearch && matchesSubject && matchesLanguage;
   });
 
   const handleVideoClick = (videoId: string) => {
@@ -109,6 +113,28 @@ const VideosPage = () => {
               onClick={() => setSelectedSubject(subject)}
             >
               {subject}
+            </Button>
+          ))}
+        </div>
+
+        {/* Language Filter */}
+        <div className="flex gap-2 flex-wrap items-center">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <Button
+            variant={selectedLanguage === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedLanguage(null)}
+          >
+            All Languages
+          </Button>
+          {CONTENT_LANGUAGES.slice(0, 5).map(lang => (
+            <Button
+              key={lang.code}
+              variant={selectedLanguage === lang.code ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedLanguage(lang.code)}
+            >
+              {lang.nativeName}
             </Button>
           ))}
         </div>

@@ -36,6 +36,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { CONTENT_LANGUAGES, getLanguageName } from '@/lib/languages';
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
 
@@ -46,6 +47,7 @@ interface VideoForm {
   topic: string;
   instructor: string;
   resolution: '360p' | '480p';
+  language: string;
 }
 
 interface DBVideo {
@@ -56,6 +58,7 @@ interface DBVideo {
   file_size: string | null;
   instructor: string | null;
   is_active: boolean | null;
+  language: string;
   created_at: string;
 }
 
@@ -78,6 +81,7 @@ export function AdminVideos() {
     topic: '',
     instructor: '',
     resolution: '360p',
+    language: 'en',
   });
 
   useEffect(() => {
@@ -87,7 +91,7 @@ export function AdminVideos() {
   const fetchVideos = async () => {
     const { data, error } = await supabase
       .from('videos')
-      .select('id, title, subject, duration, file_size, instructor, is_active, created_at')
+      .select('id, title, subject, duration, file_size, instructor, is_active, language, created_at')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -242,6 +246,7 @@ export function AdminVideos() {
           topic: form.topic,
           instructor: form.instructor,
           resolution: form.resolution,
+          language: form.language,
           video_url: videoUrl,
           thumbnail_url: thumbnailUrl,
           duration: formatDuration(duration),
@@ -267,6 +272,7 @@ export function AdminVideos() {
         topic: '',
         instructor: '',
         resolution: '360p',
+        language: 'en',
       });
       setSelectedFile(null);
       setSelectedThumbnail(null);
@@ -321,6 +327,9 @@ export function AdminVideos() {
                       <p className="font-medium truncate">{video.title}</p>
                       <Badge variant="outline" className="shrink-0">
                         {video.subject}
+                      </Badge>
+                      <Badge variant="secondary" className="shrink-0">
+                        {getLanguageName(video.language)}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
@@ -533,6 +542,25 @@ export function AdminVideos() {
                 <SelectContent>
                   <SelectItem value="360p">360p (Low Data)</SelectItem>
                   <SelectItem value="480p">480p (Better Quality)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="language">Language *</Label>
+              <Select 
+                value={form.language} 
+                onValueChange={(value) => setForm({ ...form, language: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTENT_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      {lang.nativeName} ({lang.name})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -114,6 +114,7 @@ export type Database = {
           file_url: string
           id: string
           is_active: boolean | null
+          language: string
           pages: number | null
           subject: string
           title: string
@@ -131,6 +132,7 @@ export type Database = {
           file_url: string
           id?: string
           is_active?: boolean | null
+          language?: string
           pages?: number | null
           subject: string
           title: string
@@ -148,6 +150,7 @@ export type Database = {
           file_url?: string
           id?: string
           is_active?: boolean | null
+          language?: string
           pages?: number | null
           subject?: string
           title?: string
@@ -331,6 +334,7 @@ export type Database = {
           id: string
           instructor: string | null
           is_active: boolean | null
+          language: string
           resolution: string | null
           subject: string
           thumbnail_url: string | null
@@ -351,6 +355,7 @@ export type Database = {
           id?: string
           instructor?: string | null
           is_active?: boolean | null
+          language?: string
           resolution?: string | null
           subject: string
           thumbnail_url?: string | null
@@ -371,6 +376,7 @@ export type Database = {
           id?: string
           instructor?: string | null
           is_active?: boolean | null
+          language?: string
           resolution?: string | null
           subject?: string
           thumbnail_url?: string | null

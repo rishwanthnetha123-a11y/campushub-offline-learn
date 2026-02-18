@@ -12,7 +12,8 @@ import {
   Shield,
   LogIn,
   LogOut,
-  User
+  User,
+  TicketIcon
 } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';
@@ -26,6 +27,7 @@ const navItems = [
   { path: '/videos', label: 'Videos', icon: Video },
   { path: '/resources', label: 'Resources', icon: FileText },
   { path: '/ask', label: 'Ask AI', icon: MessageSquare },
+  { path: '/support', label: 'Support', icon: TicketIcon },
   { path: '/progress', label: 'My Progress', icon: Trophy },
   { path: '/downloads', label: 'Downloads', icon: Download },
 ];

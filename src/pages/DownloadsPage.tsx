@@ -8,13 +8,17 @@ import {
   Music,
   RefreshCw,
   CheckCircle2,
-  FolderOpen
+  FolderOpen,
+  Play,
+  WifiOff,
+  Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { supabase } from '@/integrations/supabase/client';
+import { getLanguageName } from '@/lib/languages';
 import { cn } from '@/lib/utils';
 
 interface DownloadedVideoInfo {
@@ -24,6 +28,7 @@ interface DownloadedVideoInfo {
   fileSize: string;
   fileSizeBytes: number;
   resolution: string;
+  language: string;
 }
 
 interface DownloadedResourceInfo {
@@ -32,6 +37,7 @@ interface DownloadedResourceInfo {
   type: string;
   fileSize: string;
   fileSizeBytes: number;
+  language: string;
 }
 
 const DownloadsPage = () => {
@@ -59,7 +65,7 @@ const DownloadsPage = () => {
       if (videoIds.length > 0) {
         const { data } = await supabase
           .from('videos')
-          .select('id, title, subject, file_size, file_size_bytes, resolution')
+          .select('id, title, subject, file_size, file_size_bytes, resolution, language')
           .in('id', videoIds);
         if (data) {
           const map: Record<string, DownloadedVideoInfo> = {};
@@ -71,6 +77,7 @@ const DownloadsPage = () => {
               fileSize: v.file_size || '0 MB',
               fileSizeBytes: v.file_size_bytes || 0,
               resolution: v.resolution || '360p',
+              language: (v as any).language || 'en',
             };
           });
           setVideoInfoMap(map);
@@ -80,7 +87,7 @@ const DownloadsPage = () => {
       if (resourceIds.length > 0) {
         const { data } = await supabase
           .from('resources')
-          .select('id, title, type, file_size, file_size_bytes')
+          .select('id, title, type, file_size, file_size_bytes, language')
           .in('id', resourceIds);
         if (data) {
           const map: Record<string, DownloadedResourceInfo> = {};
@@ -91,6 +98,7 @@ const DownloadsPage = () => {
               type: r.type,
               fileSize: r.file_size || '0 MB',
               fileSizeBytes: r.file_size_bytes || 0,
+              language: (r as any).language || 'en',
             };
           });
           setResourceInfoMap(map);
@@ -195,6 +203,45 @@ const DownloadsPage = () => {
         </Card>
       </div>
 
+      {/* Open Offline Content Banner */}
+      {(videoDownloads.length > 0 || resourceDownloads.length > 0) && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <WifiOff className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Offline Content Ready</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {videoDownloads.length + resourceDownloads.length} items available without internet
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {videoDownloads.length > 0 && (
+                  <Link to={`/video/${videoDownloads[0].contentId}`}>
+                    <Button className="gap-2">
+                      <Play className="h-4 w-4" />
+                      Open Offline Content
+                    </Button>
+                  </Link>
+                )}
+                {videoDownloads.length === 0 && resourceDownloads.length > 0 && (
+                  <Link to={`/resource/${resourceDownloads[0].contentId}`}>
+                    <Button className="gap-2">
+                      <FolderOpen className="h-4 w-4" />
+                      Open Offline Content
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Downloaded Videos */}
       <Card>
         <CardHeader>
@@ -242,6 +289,13 @@ const DownloadsPage = () => {
                         <span>{video?.fileSize || '—'}</span>
                         <span>•</span>
                         <span>{video?.resolution || '—'}</span>
+                        {video?.language && video.language !== 'en' && (
+                          <>
+                            <span>•</span>
+                            <Globe className="h-3 w-3" />
+                            <span>{getLanguageName(video.language)}</span>
+                          </>
+                        )}
                         {progress?.completed && (
                           <>
                             <span>•</span>
@@ -314,6 +368,13 @@ const DownloadsPage = () => {
                         <span className="capitalize">{resource?.type || 'file'}</span>
                         <span>•</span>
                         <span>{resource?.fileSize || '—'}</span>
+                        {resource?.language && resource.language !== 'en' && (
+                          <>
+                            <span>•</span>
+                            <Globe className="h-3 w-3" />
+                            <span>{getLanguageName(resource.language)}</span>
+                          </>
+                        )}
                         {progress?.completed && (
                           <>
                             <span>•</span>

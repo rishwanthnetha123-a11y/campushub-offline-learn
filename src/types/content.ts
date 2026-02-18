@@ -15,6 +15,7 @@ export interface Video {
   videoUrl: string;
   instructor: string;
   order: number;
+  language?: string;
 }
 
 export interface Resource {
@@ -29,6 +30,7 @@ export interface Resource {
   fileUrl: string;
   pages?: number; // For PDFs
   duration?: string; // For audio
+  language?: string;
 }
 
 export interface Quiz {

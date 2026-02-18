@@ -35,6 +35,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { CONTENT_LANGUAGES, getLanguageName } from '@/lib/languages';
 
 const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
 const RESOURCE_TYPES = [
@@ -49,6 +50,7 @@ interface ResourceForm {
   subject: string;
   topic: string;
   type: string;
+  language: string;
 }
 
 interface DBResource {
@@ -59,6 +61,7 @@ interface DBResource {
   file_size: string | null;
   pages: number | null;
   is_active: boolean | null;
+  language: string;
   created_at: string;
 }
 
@@ -78,6 +81,7 @@ export function AdminResources() {
     subject: '',
     topic: '',
     type: 'pdf',
+    language: 'en',
   });
 
   useEffect(() => {
@@ -87,7 +91,7 @@ export function AdminResources() {
   const fetchResources = async () => {
     const { data, error } = await supabase
       .from('resources')
-      .select('id, title, subject, type, file_size, pages, is_active, created_at')
+      .select('id, title, subject, type, file_size, pages, is_active, language, created_at')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -186,6 +190,7 @@ export function AdminResources() {
           subject: form.subject,
           topic: form.topic,
           type: form.type,
+          language: form.language,
           file_url: publicUrl,
           file_size: formatFileSize(selectedFile.size),
           file_size_bytes: selectedFile.size,
@@ -200,7 +205,7 @@ export function AdminResources() {
         description: `"${form.title}" has been added to ${form.subject}.`,
       });
 
-      setForm({ title: '', description: '', subject: '', topic: '', type: 'pdf' });
+      setForm({ title: '', description: '', subject: '', topic: '', type: 'pdf', language: 'en' });
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       fetchResources();
@@ -249,6 +254,7 @@ export function AdminResources() {
                       <p className="font-medium truncate">{resource.title}</p>
                       <Badge variant="outline" className="shrink-0">{resource.subject}</Badge>
                       <Badge variant="secondary" className="shrink-0">{resource.type.toUpperCase()}</Badge>
+                      <Badge variant="secondary" className="shrink-0">{getLanguageName(resource.language)}</Badge>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
                       {resource.file_size && <span>{resource.file_size}</span>}
@@ -395,6 +401,21 @@ export function AdminResources() {
                 value={form.topic}
                 onChange={(e) => setForm({ ...form, topic: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="res-language">Language *</Label>
+              <Select value={form.language} onValueChange={(v) => setForm({ ...form, language: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTENT_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      {lang.nativeName} ({lang.name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

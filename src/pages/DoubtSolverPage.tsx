@@ -64,9 +64,12 @@ const DoubtSolverPage = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth?redirect=/ask');
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to use the AI Doubt Solver.',
+      });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, toast]);
 
   useEffect(() => {
     if (scrollRef.current) {

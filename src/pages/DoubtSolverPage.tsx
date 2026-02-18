@@ -72,7 +72,9 @@ const DoubtSolverPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState(() => {
+    try { return localStorage.getItem('campushub_language') || 'en'; } catch { return 'en'; }
+  });
   const [subject, setSubject] = useState('any');
 
   const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;

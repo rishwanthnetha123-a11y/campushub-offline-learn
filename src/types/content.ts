@@ -80,7 +80,7 @@ export interface LearningProgress {
 
 export interface SyncQueueItem {
   id: string;
-  action: 'download' | 'progress' | 'quiz';
+  action: 'download' | 'progress' | 'quiz' | 'ticket' | 'ticket_message';
   data: unknown;
   createdAt: string;
   retries: number;

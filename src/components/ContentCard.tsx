@@ -166,7 +166,8 @@ export const ContentCard = ({
         {/* Download button */}
         <div onClick={(e) => e.stopPropagation()}>
           <DownloadButton
-            isDownloaded={isDownloaded}
+            downloadState={isDownloaded ? 'downloaded' : 'idle'}
+            progress={isDownloaded ? 100 : 0}
             fileSize={content.fileSize}
             onDownload={onDownload}
             onRemove={onRemove}

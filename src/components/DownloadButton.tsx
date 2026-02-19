@@ -1,45 +1,31 @@
-import { useState, useEffect } from 'react';
-import { Download, Loader2, Check, Trash2, HardDrive } from 'lucide-react';
+import { useState } from 'react';
+import { Download, Loader2, Check, Trash2, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { DownloadState } from '@/hooks/use-file-download';
 
 interface DownloadButtonProps {
-  isDownloaded: boolean;
+  downloadState: DownloadState;
+  progress: number;
   fileSize: string;
+  error?: string;
   onDownload: () => void;
   onRemove: () => void;
+  onRetry?: () => void;
   className?: string;
 }
 
 export const DownloadButton = ({
-  isDownloaded,
+  downloadState,
+  progress,
   fileSize,
+  error,
   onDownload,
   onRemove,
+  onRetry,
   className,
 }: DownloadButtonProps) => {
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    setProgress(0);
-
-    // Simulate download progress for demo
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsDownloading(false);
-          onDownload();
-          return 100;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 200);
-  };
-
-  if (isDownloaded) {
+  if (downloadState === 'downloaded') {
     return (
       <div className={cn("flex items-center gap-2", className)}>
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium badge-offline-ready">
@@ -58,7 +44,7 @@ export const DownloadButton = ({
     );
   }
 
-  if (isDownloading) {
+  if (downloadState === 'downloading') {
     return (
       <div className={cn("flex flex-col gap-1", className)}>
         <div className="flex items-center gap-2">
@@ -68,11 +54,27 @@ export const DownloadButton = ({
           </span>
         </div>
         <div className="progress-track">
-          <div 
+          <div
             className="h-full bg-accent rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
+      </div>
+    );
+  }
+
+  if (downloadState === 'failed') {
+    return (
+      <div className={cn("flex flex-col gap-2", className)}>
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertCircle className="h-4 w-4" />
+          <span className="text-sm font-medium">Download failed</span>
+        </div>
+        {error && <p className="text-xs text-muted-foreground">{error}</p>}
+        <Button variant="outline" size="sm" onClick={onRetry || onDownload} className="gap-2">
+          <RotateCcw className="h-4 w-4" />
+          Retry
+        </Button>
       </div>
     );
   }
@@ -80,7 +82,7 @@ export const DownloadButton = ({
   return (
     <Button
       variant="outline"
-      onClick={handleDownload}
+      onClick={onDownload}
       className={cn(
         "gap-2 hover:bg-accent hover:text-accent-foreground transition-colors",
         className

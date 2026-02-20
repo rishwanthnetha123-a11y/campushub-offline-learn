@@ -249,6 +249,39 @@ const VideoDetailPage = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* AI Quiz Card */}
+          {(aiQuiz?.questions?.length || (progress?.progress || 0) >= 65) && (
+            <Card className="border-2 border-accent/30">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-accent" />AI Quiz
+                  </h3>
+                </div>
+                {aiQuiz?.questions?.length ? (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {aiQuiz.questions.length} AI-generated questions • {aiQuiz.difficulty} difficulty
+                    </p>
+                    <Button className="w-full gap-2" variant="outline" onClick={() => setShowAIQuiz(true)}>
+                      <Sparkles className="h-4 w-4" />Take AI Quiz
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      AI can generate a personalized quiz from this video's content
+                    </p>
+                    <Button className="w-full gap-2" variant="outline" onClick={generateQuiz} disabled={aiQuizLoading}>
+                      {aiQuizLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      Generate AI Quiz
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

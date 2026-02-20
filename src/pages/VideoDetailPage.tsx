@@ -112,6 +112,11 @@ const VideoDetailPage = () => {
     }
   };
 
+  const handleAIQuizComplete = (score: number, passed: boolean, answers: (number | string)[]) => {
+    saveQuizAttempt({ quizId: `ai_${video.id}`, answers: answers.map(a => typeof a === 'number' ? a : -1), score, passed });
+    if (passed) updateProgress(video.id, 'video', { quizCompleted: true, quizScore: score });
+  };
+
   if (showQuiz && quiz) {
     return (
       <div className="max-w-2xl mx-auto py-8 animate-fade-in">

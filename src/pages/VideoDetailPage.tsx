@@ -34,7 +34,6 @@ const VideoDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const { quiz: aiQuiz, loading: aiQuizLoading, generateQuiz } = useAIQuiz(id);
   const { trackPosition } = useWatchAnalytics(id);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }

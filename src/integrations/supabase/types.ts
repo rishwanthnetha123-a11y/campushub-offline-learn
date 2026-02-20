@@ -44,6 +44,47 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_quizzes: {
+        Row: {
+          created_at: string
+          difficulty: string
+          generated_from: string
+          id: string
+          question_count: number
+          questions: Json
+          updated_at: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty?: string
+          generated_from?: string
+          id?: string
+          question_count?: number
+          questions?: Json
+          updated_at?: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          generated_from?: string
+          id?: string
+          question_count?: number
+          questions?: Json
+          updated_at?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_quizzes_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -203,6 +244,33 @@ export type Database = {
           quiz_score?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      study_plans: {
+        Row: {
+          generated_at: string
+          id: string
+          plan_data: Json
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          plan_data?: Json
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          plan_data?: Json
+          updated_at?: string
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }
@@ -385,6 +453,48 @@ export type Database = {
           updated_at?: string
           uploaded_by?: string | null
           video_url?: string
+        }
+        Relationships: []
+      }
+      watch_analytics: {
+        Row: {
+          created_at: string
+          drop_off_point: number | null
+          id: string
+          max_position: number
+          rewatch_count: number
+          session_count: number
+          total_watch_time: number
+          updated_at: string
+          user_id: string
+          video_id: string
+          watch_segments: Json
+        }
+        Insert: {
+          created_at?: string
+          drop_off_point?: number | null
+          id?: string
+          max_position?: number
+          rewatch_count?: number
+          session_count?: number
+          total_watch_time?: number
+          updated_at?: string
+          user_id: string
+          video_id: string
+          watch_segments?: Json
+        }
+        Update: {
+          created_at?: string
+          drop_off_point?: number | null
+          id?: string
+          max_position?: number
+          rewatch_count?: number
+          session_count?: number
+          total_watch_time?: number
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+          watch_segments?: Json
         }
         Relationships: []
       }

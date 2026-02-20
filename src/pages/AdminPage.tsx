@@ -26,6 +26,7 @@ import { AdminVideos } from '@/components/admin/AdminVideos';
 import { AdminInvites } from '@/components/admin/AdminInvites';
 import { AdminResources } from '@/components/admin/AdminResources';
 import { AdminTickets } from '@/components/admin/AdminTickets';
+import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
 
 const AdminPage = () => {
   const navigate = useNavigate();

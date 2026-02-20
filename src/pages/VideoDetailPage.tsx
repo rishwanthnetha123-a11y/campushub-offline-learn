@@ -97,6 +97,11 @@ const VideoDetailPage = () => {
 
   const handleProgress = (percent: number, currentTime: number) => {
     updateProgress(video.id, 'video', { progress: Math.round(percent), lastPosition: currentTime });
+    trackPosition(currentTime);
+    // Auto-generate AI quiz when 65% watched
+    if (percent >= 65 && !aiQuiz && !aiQuizLoading) {
+      generateQuiz();
+    }
   };
 
   const handleComplete = () => markCompleted(video.id, 'video');

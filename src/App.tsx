@@ -17,6 +17,7 @@ import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import DoubtSolverPage from "./pages/DoubtSolverPage";
 import SupportPage from "./pages/SupportPage";
+import StudyPlannerPage from "./pages/StudyPlannerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

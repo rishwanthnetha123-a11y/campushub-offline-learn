@@ -65,13 +65,16 @@ export const AIQuizPlayer = ({
     setAnswers(newAnswers);
 
     if (isLastQuestion) {
-      const correctCount = newAnswers.reduce((count, ans, index) => {
-        const q = questions[index];
+      let correctCount = 0;
+      for (let i = 0; i < newAnswers.length; i++) {
+        const q = questions[i];
+        const ans = newAnswers[i];
         if (q.type === 'short_answer') {
-          return count + (String(ans).trim().toLowerCase().includes((q.correctText || '').toLowerCase()) ? 1 : 0);
+          if (String(ans).trim().toLowerCase().includes((q.correctText || '').toLowerCase())) correctCount++;
+        } else if (ans === q.correctAnswer) {
+          correctCount++;
         }
-        return count + (ans === q.correctAnswer ? 1 : 0);
-      }, 0);
+      }
       const score = Math.round((correctCount / questions.length) * 100);
       onComplete(score, score >= passingScore, newAnswers);
       setShowResult(true);

@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
-  Shield, LogIn, LogOut, TicketIcon, Globe
+  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays
 } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';
@@ -29,6 +29,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { path: '/videos', label: t.nav_videos, icon: Video },
     { path: '/resources', label: t.nav_resources, icon: FileText },
     { path: '/ask', label: t.nav_ask_ai, icon: MessageSquare },
+    { path: '/study-plan', label: 'Study Plan', icon: CalendarDays },
     { path: '/support', label: t.nav_support, icon: TicketIcon },
     { path: '/progress', label: t.nav_progress, icon: Trophy },
     { path: '/downloads', label: t.nav_downloads, icon: Download },

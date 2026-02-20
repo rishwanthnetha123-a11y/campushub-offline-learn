@@ -26,6 +26,7 @@ import { AdminVideos } from '@/components/admin/AdminVideos';
 import { AdminInvites } from '@/components/admin/AdminInvites';
 import { AdminResources } from '@/components/admin/AdminResources';
 import { AdminTickets } from '@/components/admin/AdminTickets';
+import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -229,23 +230,7 @@ const AdminPage = () => {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Learning Analytics
-                </CardTitle>
-                <CardDescription>
-                  Coming soon: Detailed charts and insights about student learning patterns
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="h-64 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Advanced analytics will be available soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminAnalytics />
           </TabsContent>
         </Tabs>
       </main>

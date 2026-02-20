@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.ask-doubt]
 verify_jwt = false
+
+[functions.generate-quiz]
+verify_jwt = false
+
+[functions.generate-study-plan]
+verify_jwt = false
+
+[functions.admin-analytics]
+verify_jwt = false

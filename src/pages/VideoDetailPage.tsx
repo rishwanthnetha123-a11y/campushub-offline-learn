@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Download, CheckCircle2, Clock, User, BookOpen, Trophy, Loader2
+  ArrowLeft, Download, CheckCircle2, Clock, User, BookOpen, Trophy, Loader2, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { QuizPlayer } from '@/components/QuizPlayer';
+import { AIQuizPlayer } from '@/components/AIQuizPlayer';
 import { DownloadButton } from '@/components/DownloadButton';
 import { OfflineStatusBadge } from '@/components/OfflineStatusBadge';
 import { ProgressRing } from '@/components/ProgressRing';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { useFileDownload, useLocalFileUrl } from '@/hooks/use-file-download';
+import { useAIQuiz, useWatchAnalytics } from '@/hooks/use-ai-learning';
 import { demoVideos, demoQuizzes } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -27,8 +29,11 @@ const VideoDetailPage = () => {
   const { startDownload, removeFile, getDownloadState, retryDownload } = useFileDownload();
 
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showAIQuiz, setShowAIQuiz] = useState(false);
   const [video, setVideo] = useState<Video | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const { quiz: aiQuiz, loading: aiQuizLoading, generateQuiz } = useAIQuiz(id);
+  const { trackPosition } = useWatchAnalytics(id);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -91,6 +96,11 @@ const VideoDetailPage = () => {
 
   const handleProgress = (percent: number, currentTime: number) => {
     updateProgress(video.id, 'video', { progress: Math.round(percent), lastPosition: currentTime });
+    trackPosition(currentTime);
+    // Auto-generate AI quiz when 65% watched
+    if (percent >= 65 && !aiQuiz && !aiQuizLoading) {
+      generateQuiz();
+    }
   };
 
   const handleComplete = () => markCompleted(video.id, 'video');
@@ -101,6 +111,27 @@ const VideoDetailPage = () => {
       if (passed) updateProgress(video.id, 'video', { quizCompleted: true, quizScore: score });
     }
   };
+
+  const handleAIQuizComplete = (score: number, passed: boolean, answers: (number | string)[]) => {
+    saveQuizAttempt({ quizId: `ai_${video.id}`, answers: answers.map(a => typeof a === 'number' ? a : -1), score, passed });
+    if (passed) updateProgress(video.id, 'video', { quizCompleted: true, quizScore: score });
+  };
+
+  if (showAIQuiz && aiQuiz?.questions?.length) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 animate-fade-in">
+        <Button variant="ghost" onClick={() => setShowAIQuiz(false)} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />Back to Video
+        </Button>
+        <AIQuizPlayer
+          questions={aiQuiz.questions}
+          title={`AI Quiz: ${video.title}`}
+          onComplete={handleAIQuizComplete}
+          onClose={() => setShowAIQuiz(false)}
+        />
+      </div>
+    );
+  }
 
   if (showQuiz && quiz) {
     return (
@@ -215,6 +246,39 @@ const VideoDetailPage = () => {
                 <Button className="w-full" disabled={!canTakeQuiz} onClick={() => setShowQuiz(true)}>
                   {progress?.quizCompleted ? 'Retake Quiz' : canTakeQuiz ? 'Take Quiz' : 'Complete video first'}
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* AI Quiz Card */}
+          {(aiQuiz?.questions?.length || (progress?.progress || 0) >= 65) && (
+            <Card className="border-2 border-accent/30">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-accent" />AI Quiz
+                  </h3>
+                </div>
+                {aiQuiz?.questions?.length ? (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {aiQuiz.questions.length} AI-generated questions • {aiQuiz.difficulty} difficulty
+                    </p>
+                    <Button className="w-full gap-2" variant="outline" onClick={() => setShowAIQuiz(true)}>
+                      <Sparkles className="h-4 w-4" />Take AI Quiz
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      AI can generate a personalized quiz from this video's content
+                    </p>
+                    <Button className="w-full gap-2" variant="outline" onClick={generateQuiz} disabled={aiQuizLoading}>
+                      {aiQuizLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      Generate AI Quiz
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

@@ -29,7 +29,11 @@ const VideoDetailPage = () => {
   const { startDownload, removeFile, getDownloadState, retryDownload } = useFileDownload();
 
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showAIQuiz, setShowAIQuiz] = useState(false);
   const [video, setVideo] = useState<Video | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const { quiz: aiQuiz, loading: aiQuizLoading, generateQuiz } = useAIQuiz(id);
+  const { trackPosition } = useWatchAnalytics(id);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

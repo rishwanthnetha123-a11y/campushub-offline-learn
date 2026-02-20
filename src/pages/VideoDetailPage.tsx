@@ -117,6 +117,22 @@ const VideoDetailPage = () => {
     if (passed) updateProgress(video.id, 'video', { quizCompleted: true, quizScore: score });
   };
 
+  if (showAIQuiz && aiQuiz?.questions?.length) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 animate-fade-in">
+        <Button variant="ghost" onClick={() => setShowAIQuiz(false)} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />Back to Video
+        </Button>
+        <AIQuizPlayer
+          questions={aiQuiz.questions}
+          title={`AI Quiz: ${video.title}`}
+          onComplete={handleAIQuizComplete}
+          onClose={() => setShowAIQuiz(false)}
+        />
+      </div>
+    );
+  }
+
   if (showQuiz && quiz) {
     return (
       <div className="max-w-2xl mx-auto py-8 animate-fade-in">

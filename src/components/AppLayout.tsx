@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
-  Shield, LogIn, LogOut, TicketIcon, Globe
+  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays
 } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';

@@ -123,6 +123,12 @@ const DownloadsPage = () => {
                 </div>
               </div>
               <div className="flex gap-2">
+                <Link to="/share">
+                  <Button variant="outline" className="gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Share Offline
+                  </Button>
+                </Link>
                 {downloadedVideos.length > 0 && <Link to={`/video/${downloadedVideos[0].contentId}`}><Button className="gap-2"><Play className="h-4 w-4" />{t.downloads_open_offline}</Button></Link>}
                 {downloadedVideos.length === 0 && downloadedResources.length > 0 && <Link to={`/resource/${downloadedResources[0].contentId}`}><Button className="gap-2"><FolderOpen className="h-4 w-4" />{t.downloads_open_offline}</Button></Link>}
               </div>

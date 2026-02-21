@@ -308,7 +308,65 @@ const DoubtSolverPage = () => {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={startNewChat} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Chat</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="gap-2">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">History ({chatHistory.length})</span>
+          </Button>
+        </div>
       </div>
+
+      {/* Chat History Panel */}
+      {showHistory && (
+        <Card className="max-h-64 overflow-hidden">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Past Conversations ({chatHistory.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-2 pb-2">
+            <ScrollArea className="max-h-44">
+              {chatHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No saved conversations yet</p>
+              ) : (
+                <div className="space-y-1">
+                  {chatHistory.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors group",
+                        activeConversationId === conv.id ? "bg-primary/10" : "hover:bg-muted"
+                      )}
+                    >
+                      <div className="flex-1 min-w-0" onClick={() => loadConversation(conv)}>
+                        <p className="text-sm font-medium truncate">{conv.preview || 'Conversation'}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(conv.createdAt).toLocaleDateString()}
+                          {conv.subject !== 'any' && ` • ${conv.subject}`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Language & Subject Selection */}
       <div className="flex flex-wrap gap-3">

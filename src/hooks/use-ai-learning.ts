@@ -172,6 +172,10 @@ interface StudyTask {
   subject: string;
   duration_minutes: number;
   video_id?: string;
+  video_title?: string;
+  video_thumbnail?: string;
+  video_subject?: string;
+  video_duration?: string;
   priority: 'high' | 'medium' | 'low';
   completed?: boolean;
 }

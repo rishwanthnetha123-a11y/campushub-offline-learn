@@ -224,7 +224,7 @@ export const useStudyPlanner = () => {
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
 
-      const planData = data.plan?.plan_data || data.plan;
+      const planData = data.enriched_plan || data.plan?.plan_data || data.plan;
       setPlan(planData);
       localStorage.setItem('campushub_study_plan', JSON.stringify(planData));
       toast({ title: 'Study Plan Generated!', description: 'Your personalized weekly plan is ready.' });

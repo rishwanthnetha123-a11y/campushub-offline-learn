@@ -190,7 +190,24 @@ Rules:
 
     if (saveErr) console.error("Save plan error:", saveErr);
 
-    return new Response(JSON.stringify({ plan: savedPlan || { plan_data: planData, week_start: weekStartStr } }), {
+    // Enrich plan data with video metadata for offline use
+    if (planData.days) {
+      for (const day of planData.days) {
+        for (const task of day.tasks || []) {
+          if (task.video_id) {
+            const v = videos.find((vid: any) => vid.id === task.video_id);
+            if (v) {
+              task.video_title = v.title;
+              task.video_thumbnail = v.thumbnail_url;
+              task.video_subject = v.subject;
+              task.video_duration = v.duration;
+            }
+          }
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ plan: savedPlan || { plan_data: planData, week_start: weekStartStr }, enriched_plan: planData }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

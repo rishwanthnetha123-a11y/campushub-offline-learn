@@ -18,6 +18,7 @@ import AdminPage from "./pages/AdminPage";
 import DoubtSolverPage from "./pages/DoubtSolverPage";
 import SupportPage from "./pages/SupportPage";
 import StudyPlannerPage from "./pages/StudyPlannerPage";
+import ShareResourcesPage from "./pages/ShareResourcesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

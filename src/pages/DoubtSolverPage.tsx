@@ -62,6 +62,28 @@ const UI_TRANSLATIONS: Record<string, { title: string; subtitle: string; placeho
 
 import { supabase } from '@/integrations/supabase/client';
 
+const CHAT_HISTORY_KEY = 'campushub_doubt_history';
+const MAX_SAVED_CONVERSATIONS = 20;
+
+interface SavedConversation {
+  id: string;
+  messages: Message[];
+  subject: string;
+  language: string;
+  createdAt: string;
+  preview: string;
+}
+
+const loadChatHistory = (): SavedConversation[] => {
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+  } catch { return []; }
+};
+
+const saveChatHistory = (conversations: SavedConversation[]) => {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(conversations.slice(0, MAX_SAVED_CONVERSATIONS)));
+};
+
 const DoubtSolverPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -76,8 +98,55 @@ const DoubtSolverPage = () => {
     try { return localStorage.getItem('campushub_language') || 'en'; } catch { return 'en'; }
   });
   const [subject, setSubject] = useState('any');
+  const [chatHistory, setChatHistory] = useState<SavedConversation[]>(loadChatHistory);
+  const [showHistory, setShowHistory] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;
+
+  // Save conversation whenever messages change (after streaming completes)
+  useEffect(() => {
+    if (messages.length < 2 || isStreaming) return;
+    const convId = activeConversationId || crypto.randomUUID();
+    if (!activeConversationId) setActiveConversationId(convId);
+    
+    const conversation: SavedConversation = {
+      id: convId,
+      messages,
+      subject,
+      language,
+      createdAt: new Date().toISOString(),
+      preview: messages[0]?.content.slice(0, 80) || '',
+    };
+    
+    setChatHistory(prev => {
+      const updated = [conversation, ...prev.filter(c => c.id !== convId)];
+      saveChatHistory(updated);
+      return updated.slice(0, MAX_SAVED_CONVERSATIONS);
+    });
+  }, [messages, isStreaming]);
+
+  const loadConversation = (conv: SavedConversation) => {
+    setMessages(conv.messages);
+    setActiveConversationId(conv.id);
+    setSubject(conv.subject || 'any');
+    setShowHistory(false);
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setActiveConversationId(null);
+    setShowHistory(false);
+  };
+
+  const deleteConversation = (id: string) => {
+    setChatHistory(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      saveChatHistory(updated);
+      return updated;
+    });
+    if (activeConversationId === id) startNewChat();
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {

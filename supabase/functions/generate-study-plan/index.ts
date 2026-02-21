@@ -58,6 +58,17 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    // Build video lookup for AI to reference
+    const videoList = videos.map((v: any) => ({
+      id: v.id,
+      title: v.title,
+      subject: v.subject,
+      topic: v.topic,
+      duration: v.duration,
+      duration_seconds: v.duration_seconds,
+      thumbnail_url: v.thumbnail_url,
+    }));
+
     const prompt = `Generate a 7-day study plan for a student.
 
 Student Data:
@@ -69,21 +80,23 @@ Student Data:
 Subject Performance:
 ${Object.entries(subjectScores).map(([s, d]) => `- ${s}: avg ${Math.round(d.total / d.count)}%`).join("\n") || "No quiz data yet"}
 
-Pending Videos:
-${pendingVideos.slice(0, 10).map((v: any) => `- ${v.title} (${v.subject}, ${v.duration || "unknown"})`).join("\n") || "All caught up!"}
+Available Videos (use these exact IDs for video_id):
+${pendingVideos.slice(0, 15).map((v: any) => `- ID: "${v.id}" | ${v.title} (${v.subject}, ${v.duration || "unknown"})`).join("\n") || "All caught up!"}
 
-In-Progress Videos:
+In-Progress Videos (prioritize these):
 ${inProgressVideos.slice(0, 5).map((p: any) => {
   const v = videos.find((vid: any) => vid.id === p.content_id);
-  return `- ${v?.title || p.content_id} (${p.progress}% done)`;
+  return `- ID: "${v?.id || p.content_id}" | ${v?.title || p.content_id} (${p.progress}% done)`;
 }).join("\n") || "None"}
 
 Rules:
+- CRITICAL: For watch_video and take_quiz tasks, you MUST include the exact video "id" in the video_id field
 - Prioritize weak subjects and in-progress content
 - Each day should have 2-3 tasks max (realistic for students)
 - Include quiz review for failed subjects
 - Include rest day on Sunday
-- Tasks: "watch_video", "take_quiz", "review_notes", "practice"`;
+- Tasks: "watch_video", "take_quiz", "review_notes", "practice"
+- For watch_video tasks, set the title to the actual video title`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

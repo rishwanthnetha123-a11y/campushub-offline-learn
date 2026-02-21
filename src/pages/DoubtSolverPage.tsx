@@ -10,7 +10,11 @@ import {
   BookOpen,
   Sparkles,
   Bot,
-  User
+  User,
+  History,
+  Plus,
+  Trash2,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';

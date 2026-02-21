@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
-  CalendarDays, Sparkles, Loader2, RefreshCw, CheckCircle2, 
-  Video, BookOpen, FileText, Coffee, Clock, AlertCircle
+  CalendarDays, Sparkles, Loader2, CheckCircle2, 
+  Video, BookOpen, FileText, Coffee, Clock, AlertCircle, Play, ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useStudyPlanner } from '@/hooks/use-ai-learning';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { cn } from '@/lib/utils';
 
 const taskIcons: Record<string, any> = {
@@ -30,6 +31,7 @@ const StudyPlannerPage = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuthContext();
   const { plan, loading, error, generatePlan, toggleTaskComplete } = useStudyPlanner();
+  const { getProgress, isDownloaded, isOnline } = useOfflineStorage();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,10 +47,13 @@ const StudyPlannerPage = () => {
     );
   }
 
-  // Calculate completion stats
   const totalTasks = plan?.days?.reduce((t, d) => t + d.tasks.filter(tk => tk.type !== 'rest').length, 0) || 0;
   const completedTasks = plan?.days?.reduce((t, d) => t + d.tasks.filter(tk => tk.completed).length, 0) || 0;
   const completionPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const handleStartLearning = (videoId: string) => {
+    navigate(`/video/${videoId}`);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -93,7 +98,6 @@ const StudyPlannerPage = () => {
 
       {plan && (
         <>
-          {/* Progress Overview */}
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
@@ -113,7 +117,6 @@ const StudyPlannerPage = () => {
             </CardContent>
           </Card>
 
-          {/* Daily Plans */}
           <div className="space-y-4">
             {plan.days?.map((day, dayIndex) => {
               const dayCompleted = day.tasks.every(t => t.completed || t.type === 'rest');
@@ -136,48 +139,117 @@ const StudyPlannerPage = () => {
                       </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-3">
                     {day.tasks.map((task, taskIndex) => {
                       const Icon = taskIcons[task.type] || BookOpen;
                       const isRest = task.type === 'rest';
+                      const videoProgress = task.video_id ? getProgress(task.video_id) : undefined;
+                      const hasLocalCopy = task.video_id ? isDownloaded(task.video_id) : false;
+                      const canNavigate = task.video_id && (isOnline || hasLocalCopy);
 
                       return (
                         <div
                           key={taskIndex}
                           className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                            "rounded-lg border transition-all overflow-hidden",
                             task.completed ? "bg-success/5 border-success/20" : "hover:bg-muted/50",
                             isRest && "bg-muted/30"
                           )}
                         >
-                          <button
-                            onClick={() => !isRest && toggleTaskComplete(dayIndex, taskIndex)}
-                            className={cn(
-                              "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                              task.completed ? "bg-success border-success" : "border-muted-foreground/30 hover:border-primary"
+                          <div className="flex items-start gap-3 p-3">
+                            {/* Thumbnail for video tasks */}
+                            {task.video_id && task.video_thumbnail && (
+                              <div className="relative w-20 h-14 rounded-md overflow-hidden shrink-0 bg-muted">
+                                <img
+                                  src={task.video_thumbnail}
+                                  alt={task.video_title || task.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                                {videoProgress && (
+                                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted-foreground/20">
+                                    <div
+                                      className="h-full bg-primary transition-all"
+                                      style={{ width: `${videoProgress.progress || 0}%` }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             )}
-                          >
-                            {task.completed && <CheckCircle2 className="h-4 w-4 text-success-foreground" />}
-                          </button>
-                          <Icon className={cn("h-4 w-4 shrink-0", task.completed ? "text-success" : "text-muted-foreground")} />
-                          <div className="flex-1 min-w-0">
-                            <p className={cn("text-sm font-medium", task.completed && "line-through text-muted-foreground")}>
-                              {task.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{task.subject}</p>
+
+                            <button
+                              onClick={() => !isRest && toggleTaskComplete(dayIndex, taskIndex)}
+                              className={cn(
+                                "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors mt-0.5",
+                                task.completed ? "bg-success border-success" : "border-muted-foreground/30 hover:border-primary"
+                              )}
+                            >
+                              {task.completed && <CheckCircle2 className="h-4 w-4 text-success-foreground" />}
+                            </button>
+
+                            {!task.video_id && (
+                              <Icon className={cn("h-4 w-4 shrink-0 mt-1", task.completed ? "text-success" : "text-muted-foreground")} />
+                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <p className={cn("text-sm font-medium", task.completed && "line-through text-muted-foreground")}>
+                                {task.video_title || task.title}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <p className="text-xs text-muted-foreground">{task.subject}</p>
+                                {task.video_duration && (
+                                  <span className="text-xs text-muted-foreground">• {task.video_duration}</span>
+                                )}
+                                {hasLocalCopy && (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-success/10 text-success border-success/20">
+                                    Offline
+                                  </Badge>
+                                )}
+                              </div>
+                              {/* Progress bar for video tasks */}
+                              {videoProgress && !task.completed && (
+                                <div className="mt-2">
+                                  <Progress value={videoProgress.progress || 0} className="h-1.5" />
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    {videoProgress.progress || 0}% watched
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />{task.duration_minutes}m
+                              </span>
+                              <Badge variant="outline" className={cn("text-xs", priorityColors[task.priority])}>
+                                {task.priority}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />{task.duration_minutes}m
-                            </span>
-                            <Badge variant="outline" className={cn("text-xs", priorityColors[task.priority])}>
-                              {task.priority}
-                            </Badge>
-                          </div>
-                          {task.video_id && (
-                            <Link to={`/video/${task.video_id}`}>
-                              <Button variant="ghost" size="sm" className="text-xs">Go</Button>
-                            </Link>
+
+                          {/* Start Learning button for video tasks */}
+                          {task.video_id && !task.completed && (
+                            <div className="px-3 pb-3 pt-0">
+                              <Button
+                                size="sm"
+                                className="w-full gap-2"
+                                variant={canNavigate ? "default" : "outline"}
+                                disabled={!canNavigate}
+                                onClick={() => handleStartLearning(task.video_id!)}
+                              >
+                                {canNavigate ? (
+                                  <>
+                                    <Play className="h-3.5 w-3.5" />
+                                    {videoProgress?.progress ? 'Continue Learning' : 'Start Learning'}
+                                  </>
+                                ) : (
+                                  <>
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Needs Internet
+                                  </>
+                                )}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       );

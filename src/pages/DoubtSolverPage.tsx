@@ -10,7 +10,11 @@ import {
   BookOpen,
   Sparkles,
   Bot,
-  User
+  User,
+  History,
+  Plus,
+  Trash2,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,6 +66,28 @@ const UI_TRANSLATIONS: Record<string, { title: string; subtitle: string; placeho
 
 import { supabase } from '@/integrations/supabase/client';
 
+const CHAT_HISTORY_KEY = 'campushub_doubt_history';
+const MAX_SAVED_CONVERSATIONS = 20;
+
+interface SavedConversation {
+  id: string;
+  messages: Message[];
+  subject: string;
+  language: string;
+  createdAt: string;
+  preview: string;
+}
+
+const loadChatHistory = (): SavedConversation[] => {
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+  } catch { return []; }
+};
+
+const saveChatHistory = (conversations: SavedConversation[]) => {
+  localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(conversations.slice(0, MAX_SAVED_CONVERSATIONS)));
+};
+
 const DoubtSolverPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -76,8 +102,55 @@ const DoubtSolverPage = () => {
     try { return localStorage.getItem('campushub_language') || 'en'; } catch { return 'en'; }
   });
   const [subject, setSubject] = useState('any');
+  const [chatHistory, setChatHistory] = useState<SavedConversation[]>(loadChatHistory);
+  const [showHistory, setShowHistory] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;
+
+  // Save conversation whenever messages change (after streaming completes)
+  useEffect(() => {
+    if (messages.length < 2 || isStreaming) return;
+    const convId = activeConversationId || crypto.randomUUID();
+    if (!activeConversationId) setActiveConversationId(convId);
+    
+    const conversation: SavedConversation = {
+      id: convId,
+      messages,
+      subject,
+      language,
+      createdAt: new Date().toISOString(),
+      preview: messages[0]?.content.slice(0, 80) || '',
+    };
+    
+    setChatHistory(prev => {
+      const updated = [conversation, ...prev.filter(c => c.id !== convId)];
+      saveChatHistory(updated);
+      return updated.slice(0, MAX_SAVED_CONVERSATIONS);
+    });
+  }, [messages, isStreaming]);
+
+  const loadConversation = (conv: SavedConversation) => {
+    setMessages(conv.messages);
+    setActiveConversationId(conv.id);
+    setSubject(conv.subject || 'any');
+    setShowHistory(false);
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setActiveConversationId(null);
+    setShowHistory(false);
+  };
+
+  const deleteConversation = (id: string) => {
+    setChatHistory(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      saveChatHistory(updated);
+      return updated;
+    });
+    if (activeConversationId === id) startNewChat();
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -235,7 +308,65 @@ const DoubtSolverPage = () => {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={startNewChat} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Chat</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)} className="gap-2">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">History ({chatHistory.length})</span>
+          </Button>
+        </div>
       </div>
+
+      {/* Chat History Panel */}
+      {showHistory && (
+        <Card className="max-h-64 overflow-hidden">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Past Conversations ({chatHistory.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-2 pb-2">
+            <ScrollArea className="max-h-44">
+              {chatHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No saved conversations yet</p>
+              ) : (
+                <div className="space-y-1">
+                  {chatHistory.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors group",
+                        activeConversationId === conv.id ? "bg-primary/10" : "hover:bg-muted"
+                      )}
+                    >
+                      <div className="flex-1 min-w-0" onClick={() => loadConversation(conv)}>
+                        <p className="text-sm font-medium truncate">{conv.preview || 'Conversation'}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(conv.createdAt).toLocaleDateString()}
+                          {conv.subject !== 'any' && ` • ${conv.subject}`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Language & Subject Selection */}
       <div className="flex flex-wrap gap-3">

@@ -172,6 +172,10 @@ interface StudyTask {
   subject: string;
   duration_minutes: number;
   video_id?: string;
+  video_title?: string;
+  video_thumbnail?: string;
+  video_subject?: string;
+  video_duration?: string;
   priority: 'high' | 'medium' | 'low';
   completed?: boolean;
 }
@@ -220,7 +224,7 @@ export const useStudyPlanner = () => {
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
 
-      const planData = data.plan?.plan_data || data.plan;
+      const planData = data.enriched_plan || data.plan?.plan_data || data.plan;
       setPlan(planData);
       localStorage.setItem('campushub_study_plan', JSON.stringify(planData));
       toast({ title: 'Study Plan Generated!', description: 'Your personalized weekly plan is ready.' });

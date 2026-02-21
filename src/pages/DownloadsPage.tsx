@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, Trash2, HardDrive, Video, FileText, Music, RefreshCw, CheckCircle2, FolderOpen, Play, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Download, Trash2, HardDrive, Video, FileText, Music, RefreshCw, CheckCircle2, FolderOpen, Play, WifiOff, AlertCircle, Loader2, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

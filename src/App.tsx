@@ -18,6 +18,7 @@ import AdminPage from "./pages/AdminPage";
 import DoubtSolverPage from "./pages/DoubtSolverPage";
 import SupportPage from "./pages/SupportPage";
 import StudyPlannerPage from "./pages/StudyPlannerPage";
+import ShareResourcesPage from "./pages/ShareResourcesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                     <Route path="/downloads" element={<DownloadsPage />} />
                     <Route path="/ask" element={<DoubtSolverPage />} />
                     <Route path="/study-plan" element={<StudyPlannerPage />} />
+                    <Route path="/share" element={<ShareResourcesPage />} />
                     <Route path="/support" element={<SupportPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

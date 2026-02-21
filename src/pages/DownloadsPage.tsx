@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, Trash2, HardDrive, Video, FileText, Music, RefreshCw, CheckCircle2, FolderOpen, Play, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Download, Trash2, HardDrive, Video, FileText, Music, RefreshCw, CheckCircle2, FolderOpen, Play, WifiOff, AlertCircle, Loader2, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,6 +123,12 @@ const DownloadsPage = () => {
                 </div>
               </div>
               <div className="flex gap-2">
+                <Link to="/share">
+                  <Button variant="outline" className="gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Share Offline
+                  </Button>
+                </Link>
                 {downloadedVideos.length > 0 && <Link to={`/video/${downloadedVideos[0].contentId}`}><Button className="gap-2"><Play className="h-4 w-4" />{t.downloads_open_offline}</Button></Link>}
                 {downloadedVideos.length === 0 && downloadedResources.length > 0 && <Link to={`/resource/${downloadedResources[0].contentId}`}><Button className="gap-2"><FolderOpen className="h-4 w-4" />{t.downloads_open_offline}</Button></Link>}
               </div>

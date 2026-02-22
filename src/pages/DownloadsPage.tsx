@@ -44,29 +44,44 @@ const DownloadsPage = () => {
   const downloadedResources = resourceMetas.filter(m => m.status === 'downloaded');
   const failedDownloads = allMeta.filter(m => m.status === 'failed');
 
+  // Memoize IDs to avoid refetching on every allMeta reference change
+  const videoIdKey = videoMetas.map(d => d.contentId).sort().join(',');
+  const resourceIdKey = resourceMetas.map(d => d.contentId).sort().join(',');
+
   useEffect(() => {
-    const videoIds = videoMetas.map(d => d.contentId);
-    const resourceIds = resourceMetas.map(d => d.contentId);
-    const fetchInfo = async () => {
-      if (videoIds.length > 0) {
-        const { data } = await supabase.from('videos').select('id, title, subject, file_size, file_size_bytes, resolution, language').in('id', videoIds);
+    if (!videoIdKey) { setVideoInfoMap({}); return; }
+    const ids = videoIdKey.split(',');
+    // Only fetch IDs we don't already have
+    const missing = ids.filter(id => !videoInfoMap[id]);
+    if (missing.length === 0) return;
+    supabase.from('videos').select('id, title, subject, file_size, file_size_bytes, resolution, language').in('id', missing)
+      .then(({ data }) => {
         if (data) {
-          const map: Record<string, DownloadedVideoInfo> = {};
-          data.forEach(v => { map[v.id] = { id: v.id, title: v.title, subject: v.subject, fileSize: v.file_size || '0 MB', fileSizeBytes: v.file_size_bytes || 0, resolution: v.resolution || '360p', language: (v as any).language || 'en' }; });
-          setVideoInfoMap(map);
+          setVideoInfoMap(prev => {
+            const next = { ...prev };
+            data.forEach(v => { next[v.id] = { id: v.id, title: v.title, subject: v.subject, fileSize: v.file_size || '0 MB', fileSizeBytes: v.file_size_bytes || 0, resolution: v.resolution || '360p', language: (v as any).language || 'en' }; });
+            return next;
+          });
         }
-      }
-      if (resourceIds.length > 0) {
-        const { data } = await supabase.from('resources').select('id, title, type, file_size, file_size_bytes, language').in('id', resourceIds);
+      });
+  }, [videoIdKey]);
+
+  useEffect(() => {
+    if (!resourceIdKey) { setResourceInfoMap({}); return; }
+    const ids = resourceIdKey.split(',');
+    const missing = ids.filter(id => !resourceInfoMap[id]);
+    if (missing.length === 0) return;
+    supabase.from('resources').select('id, title, type, file_size, file_size_bytes, language').in('id', missing)
+      .then(({ data }) => {
         if (data) {
-          const map: Record<string, DownloadedResourceInfo> = {};
-          data.forEach(r => { map[r.id] = { id: r.id, title: r.title, type: r.type, fileSize: r.file_size || '0 MB', fileSizeBytes: r.file_size_bytes || 0, language: (r as any).language || 'en' }; });
-          setResourceInfoMap(map);
+          setResourceInfoMap(prev => {
+            const next = { ...prev };
+            data.forEach(r => { next[r.id] = { id: r.id, title: r.title, type: r.type, fileSize: r.file_size || '0 MB', fileSizeBytes: r.file_size_bytes || 0, language: (r as any).language || 'en' }; });
+            return next;
+          });
         }
-      }
-    };
-    if (videoIds.length > 0 || resourceIds.length > 0) fetchInfo();
-  }, [allMeta]);
+      });
+  }, [resourceIdKey]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';

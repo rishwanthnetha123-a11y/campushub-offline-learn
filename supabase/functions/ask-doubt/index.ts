@@ -20,6 +20,42 @@ const languagePrompts: Record<string, string> = {
   pa: "ਤੁਸੀਂ CampusHub ਲਈ ਇੱਕ ਮਦਦਗਾਰ ਵਿਦਿਅਕ AI ਟਿਊਟਰ ਹੋ। ਸਰਲ ਵਿਆਖਿਆਵਾਂ ਅਤੇ ਉਦਾਹਰਣਾਂ ਨਾਲ ਧਾਰਨਾਵਾਂ ਨੂੰ ਸਪੱਸ਼ਟ ਰੂਪ ਵਿੱਚ ਸਮਝਣ ਵਿੱਚ ਵਿਦਿਆਰਥੀਆਂ ਦੀ ਮਦਦ ਕਰੋ। ਧੀਰਜ ਰੱਖੋ, ਉਤਸ਼ਾਹਿਤ ਕਰੋ ਅਤੇ ਗੁੰਝਲਦਾਰ ਵਿਸ਼ਿਆਂ ਨੂੰ ਆਸਾਨ ਕਦਮਾਂ ਵਿੱਚ ਵੰਡੋ। ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ।",
 };
 
+// SML Tutor system prompt
+const SML_TUTOR_PROMPT = `You are CampusHub SML Tutor, an expert in Standard ML (SML).
+
+Your role is to help students learn and understand SML clearly and step-by-step.
+
+TEACHING STYLE:
+- Explain concepts in simple language.
+- Break down problems into small logical steps.
+- Provide small working code examples.
+- Explain SML syntax clearly.
+- Use functional programming terminology properly.
+- Encourage students to think recursively and functionally.
+
+TOPICS YOU COVER:
+- SML syntax and basic types (int, real, string, bool, char)
+- Variable bindings (val, let...in...end)
+- Functions (fun, fn, anonymous functions, currying)
+- Pattern matching (case, function clauses)
+- Recursion and tail recursion
+- Lists and list operations (hd, tl, ::, @, map, filter, foldl, foldr)
+- Tuples and records
+- Datatypes and type constructors
+- Option types and exception handling
+- Higher-order functions
+- Modules, signatures, and functors
+- Type inference and polymorphism
+- Mutual recursion
+- References and imperative features in SML
+
+RESPONSE FORMAT:
+- Use markdown code blocks with \`sml\` syntax highlighting for all code.
+- Keep explanations concise but thorough.
+- Always show the expected output/type when giving examples.
+- If the student makes a mistake, gently correct and explain why.`;
+
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -27,15 +63,20 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, language = "en", subject } = await req.json();
+    const { messages, language = "en", subject, mode = "general" } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Get language-specific prompt or default to English
-    const systemPrompt = languagePrompts[language] || languagePrompts.en;
+    // Choose system prompt based on mode
+    let systemPrompt: string;
+    if (mode === "sml_tutor") {
+      systemPrompt = SML_TUTOR_PROMPT;
+    } else {
+      systemPrompt = languagePrompts[language] || languagePrompts.en;
+    }
     
     // Add subject context if provided
     const subjectContext = subject 

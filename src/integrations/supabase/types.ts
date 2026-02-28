@@ -85,6 +85,27 @@ export type Database = {
           },
         ]
       }
+      phone_otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          otp_hash: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          otp_hash: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          otp_hash?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -199,6 +220,39 @@ export type Database = {
           type?: string
           updated_at?: string
           uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      sms_helpdesk_logs: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          language: string
+          phone: string | null
+          question: string
+          student_id: string | null
+          subject: string | null
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          language?: string
+          phone?: string | null
+          question: string
+          student_id?: string | null
+          subject?: string | null
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          language?: string
+          phone?: string | null
+          question?: string
+          student_id?: string | null
+          subject?: string | null
         }
         Relationships: []
       }

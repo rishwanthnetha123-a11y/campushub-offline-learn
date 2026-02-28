@@ -14,7 +14,8 @@ import {
   History,
   Plus,
   Trash2,
-  Clock
+  Clock,
+  Code2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,7 +50,7 @@ const LANGUAGES = [
   { code: 'pa', name: 'ਪੰਜਾਬੀ (Punjabi)' },
 ];
 
-const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science'];
+const SUBJECTS = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Computer Science', 'Standard ML'];
 
 const UI_TRANSLATIONS: Record<string, { title: string; subtitle: string; placeholder: string; askTitle: string; askDesc: string; thinking: string; anySubject: string }> = {
   en: { title: 'AI Doubt Solver', subtitle: 'Ask any question in your preferred language', placeholder: 'Type your question here...', askTitle: 'Ask Your Doubts', askDesc: 'Type any question about your studies. I can explain concepts, solve problems, and help you understand difficult topics.', thinking: 'Thinking...', anySubject: 'Any subject' },
@@ -105,6 +106,7 @@ const DoubtSolverPage = () => {
   const [chatHistory, setChatHistory] = useState<SavedConversation[]>(loadChatHistory);
   const [showHistory, setShowHistory] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [mode, setMode] = useState<'general' | 'sml_tutor'>('general');
 
   const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;
 
@@ -192,6 +194,7 @@ const DoubtSolverPage = () => {
             messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
             language,
             subject: subject === 'any' ? undefined : subject,
+            mode,
           }),
         }
       );
@@ -273,7 +276,7 @@ const DoubtSolverPage = () => {
     } finally {
       setIsStreaming(false);
     }
-  }, [input, isStreaming, messages, language, subject, toast]);
+  }, [input, isStreaming, messages, language, subject, mode, toast]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -368,8 +371,30 @@ const DoubtSolverPage = () => {
         </Card>
       )}
 
-      {/* Language & Subject Selection */}
+      {/* Mode Toggle & Language & Subject Selection */}
       <div className="flex flex-wrap gap-3">
+        {/* Mode Toggle */}
+        <div className="flex rounded-lg border overflow-hidden">
+          <Button
+            variant={mode === 'general' ? 'default' : 'ghost'}
+            size="sm"
+            className="rounded-none gap-1.5"
+            onClick={() => { setMode('general'); startNewChat(); }}
+          >
+            <Sparkles className="h-4 w-4" />
+            General
+          </Button>
+          <Button
+            variant={mode === 'sml_tutor' ? 'default' : 'ghost'}
+            size="sm"
+            className="rounded-none gap-1.5"
+            onClick={() => { setMode('sml_tutor'); setSubject('Standard ML'); startNewChat(); }}
+          >
+            <Code2 className="h-4 w-4" />
+            SML Tutor
+          </Button>
+        </div>
+
         <Select value={language} onValueChange={setLanguage}>
           <SelectTrigger className="w-48">
             <Globe className="h-4 w-4 mr-2" />
@@ -416,7 +441,10 @@ const DoubtSolverPage = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {['What is photosynthesis?', 'Explain algebra basics', 'Help with grammar'].map((q) => (
+                  {(mode === 'sml_tutor' 
+                    ? ['Explain pattern matching in SML', 'What is a datatype in SML?', 'How does foldr work?']
+                    : ['What is photosynthesis?', 'Explain algebra basics', 'Help with grammar']
+                  ).map((q) => (
                     <Button
                       key={q}
                       variant="outline"

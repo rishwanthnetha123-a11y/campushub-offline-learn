@@ -77,45 +77,48 @@ const AuthPage = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!otpSent) {
-      // Send OTP
-      const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
-      const { error } = await supabase.auth.signInWithOtp({ phone });
+    const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
 
-      if (error) {
-        toast({
-          title: 'Failed to send OTP',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
+    if (!otpSent) {
+      // Send OTP via Twilio edge function
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ phone }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to send OTP');
         setOtpSent(true);
-        toast({
-          title: 'OTP sent!',
-          description: 'Check your phone for the verification code.',
-        });
+        toast({ title: 'OTP sent!', description: 'Check your phone for the verification code.' });
+      } catch (err: any) {
+        toast({ title: 'Failed to send OTP', description: err.message, variant: 'destructive' });
       }
     } else {
-      // Verify OTP
-      const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
-      const { error } = await supabase.auth.verifyOtp({
-        phone,
-        token: otp,
-        type: 'sms',
-      });
+      // Verify OTP via Twilio edge function
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ phone, otp }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Verification failed');
 
-      if (error) {
-        toast({
-          title: 'Verification failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Welcome!',
-          description: 'Successfully signed in.',
-        });
+        // Sign in with the email/password returned by verify-otp
+        const { error } = await signIn(data.email, data.temp_password);
+        if (error) throw new Error(error.message);
+        
+        toast({ title: 'Welcome!', description: 'Successfully signed in.' });
         navigate(redirectTo);
+      } catch (err: any) {
+        toast({ title: 'Verification failed', description: err.message, variant: 'destructive' });
       }
     }
 

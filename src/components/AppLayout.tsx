@@ -1,9 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
-  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays
+  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useFacultyRole } from '@/hooks/use-faculty';
 import { ConnectionStatus } from './ConnectionStatus';
 import { Button } from './ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -22,6 +23,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, isAdmin, signOut, isLoading } = useAuthContext();
   const { language, setLanguage, t } = useLanguage();
+  const { isFaculty } = useFacultyRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -88,6 +90,15 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
             <ConnectionStatus />
 
+            {isFaculty && (
+              <Link to="/faculty">
+                <Button variant="outline" size="sm" className="hidden md:flex gap-2">
+                  <GraduationCap className="h-4 w-4" />
+                  Faculty
+                </Button>
+              </Link>
+            )}
+
             {isAdmin && (
               <Link to="/admin">
                 <Button variant="outline" size="sm" className="hidden md:flex gap-2">
@@ -141,6 +152,17 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   {label}
                 </Link>
               ))}
+
+              {isFaculty && (
+                <Link
+                  to="/faculty"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <GraduationCap className="h-5 w-5" />
+                  Faculty Portal
+                </Link>
+              )}
 
               {isAdmin && (
                 <Link

@@ -85,6 +85,208 @@ export type Database = {
           },
         ]
       }
+      attendance: {
+        Row: {
+          class_id: string
+          created_at: string
+          date: string
+          id: string
+          marked_by: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          marked_by: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          marked_by?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_marked_by_fkey"
+            columns: ["marked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          section: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          section: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          section?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      faculty_classes: {
+        Row: {
+          class_id: string
+          created_at: string
+          faculty_id: string
+          id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          faculty_id: string
+          id?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          faculty_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faculty_classes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faculty_classes_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marks: {
+        Row: {
+          class_id: string
+          created_at: string
+          entered_by: string
+          exam_type: string
+          id: string
+          marks_obtained: number
+          max_marks: number
+          student_id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          entered_by: string
+          exam_type?: string
+          id?: string
+          marks_obtained?: number
+          max_marks?: number
+          student_id: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          entered_by?: string
+          exam_type?: string
+          id?: string
+          marks_obtained?: number
+          max_marks?: number
+          student_id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marks_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marks_entered_by_fkey"
+            columns: ["entered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marks_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_otps: {
         Row: {
           created_at: string
@@ -109,7 +311,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          class_id: string | null
           created_at: string
+          department_id: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -118,7 +322,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          class_id?: string | null
           created_at?: string
+          department_id?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -127,14 +333,31 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          class_id?: string | null
           created_at?: string
+          department_id?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           preferred_language?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_attempts: {
         Row: {
@@ -557,6 +780,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      faculty_has_class: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

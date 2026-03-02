@@ -19,6 +19,8 @@ import DoubtSolverPage from "./pages/DoubtSolverPage";
 import SupportPage from "./pages/SupportPage";
 import StudyPlannerPage from "./pages/StudyPlannerPage";
 import ShareResourcesPage from "./pages/ShareResourcesPage";
+import FacultyDashboardPage from "./pages/FacultyDashboardPage";
+import FacultyClassWorkspacePage from "./pages/FacultyClassWorkspacePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/faculty" element={<FacultyDashboardPage />} />
+              <Route path="/faculty/class/:classId" element={<FacultyClassWorkspacePage />} />
               <Route path="/*" element={
                 <AppLayout>
                   <Routes>

@@ -21,6 +21,12 @@ import StudyPlannerPage from "./pages/StudyPlannerPage";
 import ShareResourcesPage from "./pages/ShareResourcesPage";
 import FacultyDashboardPage from "./pages/FacultyDashboardPage";
 import FacultyClassWorkspacePage from "./pages/FacultyClassWorkspacePage";
+import HodDashboardPage from "./pages/HodDashboardPage";
+import HodSubjectsPage from "./pages/HodSubjectsPage";
+import HodAssignFacultyPage from "./pages/HodAssignFacultyPage";
+import HodSchedulePage from "./pages/HodSchedulePage";
+import HodAnalyticsPage from "./pages/HodAnalyticsPage";
+import AcceptInvitePage from "./pages/AcceptInvitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +42,14 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/accept-invite" element={<AcceptInvitePage />} />
+              {/* HOD routes */}
+              <Route path="/hod" element={<HodDashboardPage />} />
+              <Route path="/hod/subjects" element={<HodSubjectsPage />} />
+              <Route path="/hod/assign-faculty" element={<HodAssignFacultyPage />} />
+              <Route path="/hod/schedule" element={<HodSchedulePage />} />
+              <Route path="/hod/analytics" element={<HodAnalyticsPage />} />
+              {/* Faculty routes */}
               <Route path="/faculty" element={<FacultyDashboardPage />} />
               <Route path="/faculty/class/:classId" element={<FacultyClassWorkspacePage />} />
               <Route path="/*" element={

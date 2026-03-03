@@ -94,6 +94,7 @@ export type Database = {
           marked_by: string
           status: string
           student_id: string
+          subject_id: string | null
           updated_at: string
         }
         Insert: {
@@ -104,6 +105,7 @@ export type Database = {
           marked_by: string
           status?: string
           student_id: string
+          subject_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -114,6 +116,7 @@ export type Database = {
           marked_by?: string
           status?: string
           student_id?: string
+          subject_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -136,6 +139,13 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -226,6 +236,52 @@ export type Database = {
           },
         ]
       }
+      faculty_subjects: {
+        Row: {
+          class_id: string
+          created_at: string
+          faculty_id: string
+          id: string
+          subject_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          faculty_id: string
+          id?: string
+          subject_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          faculty_id?: string
+          id?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faculty_subjects_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faculty_subjects_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faculty_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marks: {
         Row: {
           class_id: string
@@ -237,6 +293,7 @@ export type Database = {
           max_marks: number
           student_id: string
           subject: string
+          subject_id: string | null
           updated_at: string
         }
         Insert: {
@@ -249,6 +306,7 @@ export type Database = {
           max_marks?: number
           student_id: string
           subject: string
+          subject_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -261,6 +319,7 @@ export type Database = {
           max_marks?: number
           student_id?: string
           subject?: string
+          subject_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -283,6 +342,13 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -446,6 +512,112 @@ export type Database = {
         }
         Relationships: []
       }
+      role_invites: {
+        Row: {
+          accepted: boolean
+          created_at: string
+          department_id: string | null
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          accepted?: boolean
+          created_at?: string
+          department_id?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          invited_by?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          accepted?: boolean
+          created_at?: string
+          department_id?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_invites_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          faculty_id: string
+          id: string
+          start_time: string
+          subject_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          faculty_id: string
+          id?: string
+          start_time: string
+          subject_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          faculty_id?: string
+          id?: string
+          start_time?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sms_helpdesk_logs: {
         Row: {
           answer: string
@@ -550,6 +722,41 @@ export type Database = {
           week_start?: string
         }
         Relationships: []
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          semester: number
+          subject_code: string
+          subject_name: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          semester: number
+          subject_code: string
+          subject_name: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          semester?: number
+          subject_code?: string
+          subject_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ticket_messages: {
         Row: {
@@ -784,6 +991,10 @@ export type Database = {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
       }
+      faculty_has_subject: {
+        Args: { _class_id: string; _subject_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -791,9 +1002,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      hod_has_department: {
+        Args: { _department_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "admin" | "student" | "faculty"
+      app_role: "admin" | "student" | "faculty" | "hod"
       ticket_category:
         | "download_issue"
         | "login"
@@ -928,7 +1143,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "student", "faculty"],
+      app_role: ["admin", "student", "faculty", "hod"],
       ticket_category: [
         "download_issue",
         "login",

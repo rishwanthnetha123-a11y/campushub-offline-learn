@@ -3,30 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 export function useFacultyRole() {
-  const { user } = useAuthContext();
-  const [isFaculty, setIsFaculty] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) {
-      setIsFaculty(false);
-      setIsLoading(false);
-      return;
-    }
-
-    const check = async () => {
-      const { data } = await (supabase as any)
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'faculty')
-        .maybeSingle();
-      setIsFaculty(!!data);
-      setIsLoading(false);
-    };
-    check();
-  }, [user]);
-
+  const { isFaculty, isLoading } = useAuthContext();
   return { isFaculty, isLoading };
 }
 
@@ -53,7 +30,6 @@ export function useFacultyClasses() {
     if (!user) return;
     setIsLoading(true);
 
-    // Get faculty class assignments
     const { data: assignments, error } = await (supabase as any)
       .from('faculty_classes')
       .select('id, class_id, classes(id, year, section, department_id, departments(name))')
@@ -65,7 +41,6 @@ export function useFacultyClasses() {
       return;
     }
 
-    // For each class, count students
     const result: FacultyClass[] = [];
     for (const a of assignments) {
       const cls = a.classes;
@@ -91,6 +66,76 @@ export function useFacultyClasses() {
   };
 
   return { classes, isLoading, refetch: fetchClasses };
+}
+
+export interface FacultySubject {
+  id: string;
+  subject_id: string;
+  class_id: string;
+  subject_code: string;
+  subject_name: string;
+  class_label: string;
+}
+
+export function useFacultySubjects() {
+  const { user } = useAuthContext();
+  const [subjects, setSubjects] = useState<FacultySubject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      setIsLoading(true);
+      const { data } = await (supabase as any)
+        .from('faculty_subjects')
+        .select('id, subject_id, class_id, subjects(subject_code, subject_name), classes(year, section)')
+        .eq('faculty_id', user.id);
+
+      const mapped = (data || []).map((d: any) => ({
+        id: d.id,
+        subject_id: d.subject_id,
+        class_id: d.class_id,
+        subject_code: d.subjects?.subject_code || '',
+        subject_name: d.subjects?.subject_name || '',
+        class_label: d.classes ? `Year ${d.classes.year} - ${d.classes.section}` : '',
+      }));
+      setSubjects(mapped);
+      setIsLoading(false);
+    };
+    fetch();
+  }, [user]);
+
+  return { subjects, isLoading };
+}
+
+export function useFacultyScheduleToday() {
+  const { user } = useAuthContext();
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      setIsLoading(true);
+      const today = new Date().getDay(); // 0=Sunday
+      const { data } = await (supabase as any)
+        .from('schedules')
+        .select('*, subjects(subject_name), classes(year, section)')
+        .eq('faculty_id', user.id)
+        .eq('day_of_week', today)
+        .order('start_time');
+
+      setSchedule((data || []).map((d: any) => ({
+        ...d,
+        subject_name: d.subjects?.subject_name || '',
+        class_label: d.classes ? `Year ${d.classes.year} - ${d.classes.section}` : '',
+      })));
+      setIsLoading(false);
+    };
+    fetch();
+  }, [user]);
+
+  return { schedule, isLoading };
 }
 
 export interface ClassStudent {

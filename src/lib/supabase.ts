@@ -2,16 +2,34 @@
 import { supabase } from '@/integrations/supabase/client';
 export { supabase };
 
-// Helper to check if user is admin
-export async function checkIsAdmin(userId: string): Promise<boolean> {
+export type AppRole = 'admin' | 'hod' | 'faculty' | 'student';
+
+// Helper to check if user has a specific role
+export async function checkUserRole(userId: string, role: AppRole): Promise<boolean> {
   const { data, error } = await (supabase as any)
     .from('user_roles')
     .select('role')
     .eq('user_id', userId)
-    .eq('role', 'admin')
+    .eq('role', role)
     .maybeSingle();
   
   return !error && !!data;
+}
+
+// Legacy helper
+export async function checkIsAdmin(userId: string): Promise<boolean> {
+  return checkUserRole(userId, 'admin');
+}
+
+// Get all roles for a user
+export async function getUserRoles(userId: string): Promise<AppRole[]> {
+  const { data, error } = await (supabase as any)
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId);
+  
+  if (error || !data) return [];
+  return data.map((r: any) => r.role as AppRole);
 }
 
 // Type definitions for database tables
@@ -21,6 +39,8 @@ export interface Profile {
   full_name: string | null;
   avatar_url: string | null;
   preferred_language: string;
+  department_id: string | null;
+  class_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -104,5 +124,17 @@ export interface AdminInvite {
   invite_token: string;
   accepted: boolean;
   expires_at: string;
+  created_at: string;
+}
+
+export interface RoleInvite {
+  id: string;
+  email: string;
+  role: AppRole;
+  department_id: string | null;
+  invite_token: string;
+  accepted: boolean;
+  expires_at: string;
+  invited_by: string | null;
   created_at: string;
 }

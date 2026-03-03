@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.sms-helpdesk]
 verify_jwt = false
+
+[functions.role-invite]
+verify_jwt = false

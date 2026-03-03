@@ -1,30 +1,31 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useFacultyRole, useFacultyClasses } from '@/hooks/use-faculty';
+import { useFacultyClasses, useFacultySubjects, useFacultyScheduleToday } from '@/hooks/use-faculty';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Users, CalendarCheck, FileEdit } from 'lucide-react';
+import { BookOpen, Users, CalendarCheck, Clock } from 'lucide-react';
 import { FacultyLayout } from '@/components/faculty/FacultyLayout';
 
 export default function FacultyDashboardPage() {
   const navigate = useNavigate();
-  const { user, isLoading: authLoading } = useAuthContext();
-  const { isFaculty, isLoading: roleLoading } = useFacultyRole();
+  const { user, isFaculty, isLoading: authLoading } = useAuthContext();
   const { classes, isLoading: classesLoading } = useFacultyClasses();
+  const { subjects, isLoading: subjectsLoading } = useFacultySubjects();
+  const { schedule, isLoading: scheduleLoading } = useFacultyScheduleToday();
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth?redirect=/faculty');
       return;
     }
-    if (!authLoading && !roleLoading && !isFaculty) {
+    if (!authLoading && !isFaculty) {
       navigate('/');
     }
-  }, [authLoading, roleLoading, isFaculty, user, navigate]);
+  }, [authLoading, isFaculty, user, navigate]);
 
-  if (authLoading || roleLoading) {
+  if (authLoading) {
     return (
       <FacultyLayout>
         <div className="space-y-4">
@@ -53,9 +54,29 @@ export default function FacultyDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard icon={BookOpen} label="Assigned Classes" value={classes.length} loading={classesLoading} />
           <SummaryCard icon={Users} label="Total Students" value={totalStudents} loading={classesLoading} />
-          <SummaryCard icon={CalendarCheck} label="Today's Attendance" value="—" loading={false} />
-          <SummaryCard icon={FileEdit} label="Pending Marks" value="—" loading={false} />
+          <SummaryCard icon={CalendarCheck} label="Subjects" value={subjects.length} loading={subjectsLoading} />
+          <SummaryCard icon={Clock} label="Today's Classes" value={schedule.length} loading={scheduleLoading} />
         </div>
+
+        {/* Today's Schedule */}
+        {!scheduleLoading && schedule.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold text-foreground mb-3">Today's Schedule</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {schedule.map(s => (
+                <Card key={s.id} className="border-l-4 border-l-accent">
+                  <CardContent className="pt-4">
+                    <p className="font-medium text-foreground">{s.subject_name}</p>
+                    <p className="text-sm text-muted-foreground">{s.class_label}</p>
+                    <Badge variant="outline" className="mt-2">
+                      {s.start_time?.slice(0,5)} - {s.end_time?.slice(0,5)}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Assigned Classes */}
         <div>
@@ -65,7 +86,7 @@ export default function FacultyDashboardPage() {
               {[1,2,3].map(i => <Skeleton key={i} className="h-36" />)}
             </div>
           ) : classes.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">No classes assigned yet. Contact your administrator.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">No classes assigned yet. Contact your HOD.</CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {classes.map(cls => (

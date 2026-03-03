@@ -1,10 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
-  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap
+  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap, Building2
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useFacultyRole } from '@/hooks/use-faculty';
+import { useState } from 'react';
 import { ConnectionStatus } from './ConnectionStatus';
 import { Button } from './ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -21,9 +20,8 @@ const NAV_ICONS = [Home, Video, FileText, MessageSquare, TicketIcon, Trophy, Dow
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAdmin, signOut, isLoading } = useAuthContext();
+  const { user, isAdmin, isHod, isFaculty, signOut, isLoading } = useAuthContext();
   const { language, setLanguage, t } = useLanguage();
-  const { isFaculty } = useFacultyRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -90,6 +88,15 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
             <ConnectionStatus />
 
+            {isHod && (
+              <Link to="/hod">
+                <Button variant="outline" size="sm" className="hidden md:flex gap-2">
+                  <Building2 className="h-4 w-4" />
+                  HOD
+                </Button>
+              </Link>
+            )}
+
             {isFaculty && (
               <Link to="/faculty">
                 <Button variant="outline" size="sm" className="hidden md:flex gap-2">
@@ -152,6 +159,17 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   {label}
                 </Link>
               ))}
+
+              {isHod && (
+                <Link
+                  to="/hod"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <Building2 className="h-5 w-5" />
+                  HOD Portal
+                </Link>
+              )}
 
               {isFaculty && (
                 <Link

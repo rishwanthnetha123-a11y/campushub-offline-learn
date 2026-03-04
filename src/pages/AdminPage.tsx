@@ -1,20 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Shield, 
-  Users, 
-  Video, 
-  FileText, 
-  BarChart3, 
-  Upload,
-  MessageSquare,
-  UserPlus,
-  TicketIcon,
-  LogOut,
-  Loader2,
-  TrendingUp,
-  Download,
-  Trophy
+  Shield, Users, Video, FileText, BarChart3, MessageSquare, UserPlus, TicketIcon,
+  LogOut, Loader2, Trophy, Building2, GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +16,7 @@ import { AdminRoleInvites } from '@/components/admin/AdminRoleInvites';
 import { AdminResources } from '@/components/admin/AdminResources';
 import { AdminTickets } from '@/components/admin/AdminTickets';
 import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
+import { AdminDepartments } from '@/components/admin/AdminDepartments';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -36,35 +25,36 @@ const AdminPage = () => {
     totalStudents: 0,
     totalVideos: 0,
     totalResources: 0,
-    totalQuizAttempts: 0,
+    totalDepartments: 0,
+    totalClasses: 0,
+    totalFaculty: 0,
   });
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/auth?redirect=/admin');
-    } else if (!isLoading && user && !isAdmin) {
-      navigate('/');
-    }
+    if (!isLoading && !user) navigate('/auth?redirect=/admin');
+    else if (!isLoading && user && !isAdmin) navigate('/');
   }, [user, isAdmin, isLoading, navigate]);
 
   useEffect(() => {
+    if (!isAdmin) return;
     const fetchStats = async () => {
-      if (!isAdmin) return;
-      
       try {
-        const [students, videos, resources, quizzes] = await Promise.all([
-          supabase.from('profiles').select('id', { count: 'exact' }),
-          supabase.from('videos').select('id', { count: 'exact' }),
-          supabase.from('resources').select('id', { count: 'exact' }),
-          supabase.from('quiz_attempts').select('id', { count: 'exact' }),
+        const [students, videos, resources, depts, cls, facultyRoles] = await Promise.all([
+          supabase.from('profiles').select('id', { count: 'exact', head: true }),
+          supabase.from('videos').select('id', { count: 'exact', head: true }),
+          supabase.from('resources').select('id', { count: 'exact', head: true }),
+          (supabase as any).from('departments').select('id', { count: 'exact', head: true }),
+          (supabase as any).from('classes').select('id', { count: 'exact', head: true }),
+          (supabase as any).from('user_roles').select('id', { count: 'exact', head: true }).eq('role', 'faculty'),
         ]);
-
         setStats({
           totalStudents: students.count || 0,
           totalVideos: videos.count || 0,
           totalResources: resources.count || 0,
-          totalQuizAttempts: quizzes.count || 0,
+          totalDepartments: depts.count || 0,
+          totalClasses: cls.count || 0,
+          totalFaculty: facultyRoles.count || 0,
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -72,175 +62,96 @@ const AdminPage = () => {
         setLoadingStats(false);
       }
     };
-
-    if (isAdmin) {
-      fetchStats();
-    }
+    fetchStats();
   }, [isAdmin]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
+  if (!isAdmin) return null;
 
-  if (!isAdmin) {
-    return null;
-  }
+  const statCards = [
+    { icon: Users, label: 'Users', value: stats.totalStudents },
+    { icon: Building2, label: 'Departments', value: stats.totalDepartments },
+    { icon: GraduationCap, label: 'Classes', value: stats.totalClasses },
+    { icon: Trophy, label: 'Faculty', value: stats.totalFaculty },
+    { icon: Video, label: 'Videos', value: stats.totalVideos },
+    { icon: FileText, label: 'Resources', value: stats.totalResources },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
-            </div>
+            <div className="p-2 rounded-lg bg-primary/10"><Shield className="h-5 w-5 text-primary" /></div>
             <div>
               <h1 className="font-semibold">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">CampusHub Management</p>
+              <p className="text-xs text-muted-foreground">CampusHub ERP Management</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              {user?.email}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+            <span className="text-sm text-muted-foreground hidden sm:block">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={async () => { await signOut(); navigate('/'); }}>
+              <LogOut className="h-4 w-4 mr-2" />Sign Out
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Students
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalStudents}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Video className="h-4 w-4" />
-                Videos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalVideos}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Resources
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalResources}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                Quiz Attempts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loadingStats ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalQuizAttempts}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {statCards.map(({ icon: Icon, label, value }) => (
+            <Card key={label}>
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-md bg-primary/10"><Icon className="h-4 w-4 text-primary" /></div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {loadingStats ? <Loader2 className="h-4 w-4 animate-spin" /> : value}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="students" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-auto">
-            <TabsTrigger value="students" className="gap-2 py-3">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Students</span>
+        {/* Tabs */}
+        <Tabs defaultValue="departments" className="space-y-4">
+          <TabsList className="flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="departments" className="gap-1.5 text-xs sm:text-sm">
+              <Building2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Departments</span><span className="sm:hidden">Depts</span>
             </TabsTrigger>
-            <TabsTrigger value="videos" className="gap-2 py-3">
-              <Video className="h-4 w-4" />
-              <span className="hidden sm:inline">Videos</span>
+            <TabsTrigger value="role-invites" className="gap-1.5 text-xs sm:text-sm">
+              <UserPlus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Role Invites</span><span className="sm:hidden">Invites</span>
             </TabsTrigger>
-            <TabsTrigger value="resources" className="gap-2 py-3">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Resources</span>
+            <TabsTrigger value="students" className="gap-1.5 text-xs sm:text-sm">
+              <Users className="h-3.5 w-3.5" /><span className="hidden sm:inline">Students</span><span className="sm:hidden">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="tickets" className="gap-2 py-3">
-              <TicketIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Tickets</span>
+            <TabsTrigger value="videos" className="gap-1.5 text-xs sm:text-sm">
+              <Video className="h-3.5 w-3.5" /><span className="hidden sm:inline">Videos</span>
             </TabsTrigger>
-            <TabsTrigger value="role-invites" className="gap-2 py-3">
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Role Invites</span>
+            <TabsTrigger value="resources" className="gap-1.5 text-xs sm:text-sm">
+              <FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">Resources</span>
             </TabsTrigger>
-            <TabsTrigger value="invites" className="gap-2 py-3">
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Invites</span>
+            <TabsTrigger value="tickets" className="gap-1.5 text-xs sm:text-sm">
+              <TicketIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Tickets</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2 py-3">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
+            <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
+              <BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="students">
-            <AdminStudents />
-          </TabsContent>
-
-          <TabsContent value="videos">
-            <AdminVideos />
-          </TabsContent>
-
-          <TabsContent value="resources">
-            <AdminResources />
-          </TabsContent>
-
-          <TabsContent value="tickets">
-            <AdminTickets />
-          </TabsContent>
-
-          <TabsContent value="role-invites">
-            <AdminRoleInvites />
-          </TabsContent>
-
-          <TabsContent value="invites">
-            <AdminInvites />
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <AdminAnalytics />
-          </TabsContent>
+          <TabsContent value="departments"><AdminDepartments /></TabsContent>
+          <TabsContent value="role-invites"><AdminRoleInvites /></TabsContent>
+          <TabsContent value="students"><AdminStudents /></TabsContent>
+          <TabsContent value="videos"><AdminVideos /></TabsContent>
+          <TabsContent value="resources"><AdminResources /></TabsContent>
+          <TabsContent value="tickets"><AdminTickets /></TabsContent>
+          <TabsContent value="analytics"><AdminAnalytics /></TabsContent>
         </Tabs>
       </main>
     </div>

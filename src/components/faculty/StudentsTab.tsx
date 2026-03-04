@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useClassStudents } from '@/hooks/use-faculty';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
 
 interface StudentStat {
   id: string;
@@ -19,7 +21,7 @@ export function StudentsTab({ classId }: { classId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (studentsLoading || students.length === 0) return;
+    if (studentsLoading || students.length === 0) { setLoading(false); return; }
     computeStats();
   }, [students, studentsLoading]);
 
@@ -28,29 +30,20 @@ export function StudentsTab({ classId }: { classId: string }) {
     const result: StudentStat[] = [];
 
     for (const s of students) {
-      // Attendance %
-      const { data: attData } = await (supabase as any)
-        .from('attendance')
-        .select('status')
-        .eq('student_id', s.id)
-        .eq('class_id', classId);
+      const [attRes, marksRes] = await Promise.all([
+        (supabase as any).from('attendance').select('status').eq('student_id', s.id).eq('class_id', classId),
+        (supabase as any).from('marks').select('marks_obtained, max_marks').eq('student_id', s.id).eq('class_id', classId),
+      ]);
 
-      const total = attData?.length || 0;
-      const present = attData?.filter((a: any) => a.status === 'present' || a.status === 'late').length || 0;
+      const attData = attRes.data || [];
+      const total = attData.length;
+      const present = attData.filter((a: any) => a.status === 'present' || a.status === 'late').length;
       const attPct = total > 0 ? Math.round((present / total) * 100) : 0;
 
-      // Average marks
-      const { data: marksData } = await (supabase as any)
-        .from('marks')
-        .select('marks_obtained, max_marks')
-        .eq('student_id', s.id)
-        .eq('class_id', classId);
-
+      const marksData = marksRes.data || [];
       let avgMarks = 0;
-      if (marksData && marksData.length > 0) {
-        const totalPct = marksData.reduce((sum: number, m: any) => {
-          return sum + ((m.marks_obtained / m.max_marks) * 100);
-        }, 0);
+      if (marksData.length > 0) {
+        const totalPct = marksData.reduce((sum: number, m: any) => sum + ((m.marks_obtained / m.max_marks) * 100), 0);
         avgMarks = Math.round(totalPct / marksData.length);
       }
 
@@ -68,7 +61,7 @@ export function StudentsTab({ classId }: { classId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Students</CardTitle>
+        <CardTitle className="text-base">Students ({stats.length})</CardTitle>
       </CardHeader>
       <CardContent>
         {stats.length === 0 ? (
@@ -80,21 +73,40 @@ export function StudentsTab({ classId }: { classId: string }) {
                 <TableRow>
                   <TableHead className="w-10">#</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-right">Attendance %</TableHead>
-                  <TableHead className="text-right">Avg Marks %</TableHead>
+                  <TableHead>Attendance</TableHead>
+                  <TableHead>Avg Marks</TableHead>
+                  <TableHead className="w-20">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {stats.map((s, idx) => (
                   <TableRow key={s.id}>
-                    <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                    <TableCell className="font-medium">{s.full_name || '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.email || '—'}</TableCell>
-                    <TableCell className={`text-right font-medium ${s.attendance_pct < 75 ? 'text-destructive' : 'text-foreground'}`}>
-                      {s.attendance_pct}%
+                    <TableCell className="text-muted-foreground font-mono text-xs">{idx + 1}</TableCell>
+                    <TableCell>
+                      <p className="font-medium text-sm">{s.full_name || '—'}</p>
+                      <p className="text-xs text-muted-foreground">{s.email || '—'}</p>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{s.avg_marks}%</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={s.attendance_pct} className="h-2 w-20" />
+                        <span className={`text-xs font-medium ${s.attendance_pct < 75 ? 'text-destructive' : 'text-foreground'}`}>
+                          {s.attendance_pct}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={s.avg_marks} className="h-2 w-20" />
+                        <span className="text-xs font-medium">{s.avg_marks}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {s.attendance_pct < 75 ? (
+                        <Badge variant="destructive" className="text-xs">Defaulter</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">OK</Badge>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

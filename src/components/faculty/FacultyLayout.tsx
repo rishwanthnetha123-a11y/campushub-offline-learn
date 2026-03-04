@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, LogOut, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, LogOut, ArrowLeft, BookOpen, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
 import campusHubLogo from '@/assets/campus-hub-logo.png';
@@ -20,9 +20,10 @@ export function FacultyLayout({ children }: { children: ReactNode }) {
     navigate('/auth');
   };
 
+  const isActive = (path: string) => location.pathname === path || (path !== '/faculty' && location.pathname.startsWith(path));
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
       <aside className="hidden md:flex w-60 flex-col bg-card border-r">
         <div className="p-4 border-b">
           <Link to="/faculty" className="flex items-center gap-2">
@@ -41,9 +42,7 @@ export function FacultyLayout({ children }: { children: ReactNode }) {
               to={path}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                location.pathname === path
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                isActive(path) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -53,24 +52,17 @@ export function FacultyLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-3 border-t space-y-1">
-          <Link
-            to="/"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted"
-          >
+          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted w-full"
-          >
+          <button onClick={handleSignOut} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted w-full">
             <LogOut className="h-4 w-4" />
             Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Mobile header */}
       <div className="flex-1 flex flex-col">
         <header className="md:hidden sticky top-0 z-50 bg-card border-b px-4 h-14 flex items-center justify-between">
           <Link to="/faculty" className="flex items-center gap-2">

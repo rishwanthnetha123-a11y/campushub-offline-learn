@@ -117,6 +117,7 @@ export default function HodDashboardPage() {
           {[
             { label: 'Manage Subjects', desc: 'Create and edit subjects', path: '/hod/subjects', icon: BookOpen },
             { label: 'Assign Faculty', desc: 'Map faculty to subjects', path: '/hod/assign-faculty', icon: Users },
+            { label: 'Manage Students', desc: 'Assign students to classes', path: '/hod/students', icon: GraduationCap },
             { label: 'Create Schedule', desc: 'Build weekly timetable', path: '/hod/schedule', icon: Calendar },
             { label: 'Analytics', desc: 'View department stats', path: '/hod/analytics', icon: BarChart3 },
           ].map(item => (

@@ -17,7 +17,7 @@ interface AttendanceRecord {
   status: string;
   subject_id: string | null;
   subjects?: { subject_name: string; subject_code: string } | null;
-  profiles?: { full_name: string | null } | null; // marked_by faculty
+  profiles?: { full_name: string | null } | null;
 }
 
 interface MarkRecord {
@@ -59,103 +59,55 @@ const StudentDashboardPage = () => {
   const [hasClass, setHasClass] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
+    if (!authLoading && !user) navigate('/auth');
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (!user) return;
-
     const fetchAll = async () => {
       setLoading(true);
+      const { data: prof } = await supabase.from('profiles').select('class_id, department_id').eq('id', user.id).single();
+      if (!prof?.class_id) { setHasClass(false); setLoading(false); return; }
 
-      // Get profile with class info
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('class_id, department_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!prof?.class_id) {
-        setHasClass(false);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch class + department info
-      const { data: cls } = await supabase
-        .from('classes')
-        .select('year, section, departments(name)')
-        .eq('id', prof.class_id)
-        .single();
+      const { data: cls } = await supabase.from('classes').select('year, section, departments(name)').eq('id', prof.class_id).single();
       setClassInfo(cls as any);
 
-      // Fetch attendance with faculty who marked it
-      const { data: att } = await supabase
-        .from('attendance')
-        .select('id, date, status, subject_id, subjects(subject_name, subject_code), profiles!attendance_marked_by_fkey(full_name)')
-        .eq('student_id', user.id)
-        .order('date', { ascending: false });
+      const { data: att } = await supabase.from('attendance').select('id, date, status, subject_id, subjects(subject_name, subject_code), profiles!attendance_marked_by_fkey(full_name)').eq('student_id', user.id).order('date', { ascending: false });
       setAttendance((att as any) || []);
 
-      // Fetch marks with faculty who entered them
-      const { data: mrk } = await supabase
-        .from('marks')
-        .select('id, subject, exam_type, marks_obtained, max_marks, subject_id, subjects(subject_name, subject_code), profiles!marks_entered_by_fkey(full_name)')
-        .eq('student_id', user.id)
-        .order('created_at', { ascending: false });
-      // Map the profiles relation to entered_by_profile for clarity
-      const mappedMarks = ((mrk as any) || []).map((m: any) => ({
-        ...m,
-        entered_by_profile: m.profiles,
-      }));
+      const { data: mrk } = await supabase.from('marks').select('id, subject, exam_type, marks_obtained, max_marks, subject_id, subjects(subject_name, subject_code), profiles!marks_entered_by_fkey(full_name)').eq('student_id', user.id).order('created_at', { ascending: false });
+      const mappedMarks = ((mrk as any) || []).map((m: any) => ({ ...m, entered_by_profile: m.profiles }));
       setMarks(mappedMarks);
 
-      // Fetch schedule for student's class
-      const { data: sch } = await supabase
-        .from('schedules')
-        .select('id, day_of_week, start_time, end_time, subjects(subject_name, subject_code), profiles(full_name)')
-        .eq('class_id', prof.class_id)
-        .order('day_of_week')
-        .order('start_time');
+      const { data: sch } = await supabase.from('schedules').select('id, day_of_week, start_time, end_time, subjects(subject_name, subject_code), profiles(full_name)').eq('class_id', prof.class_id).order('day_of_week').order('start_time');
       setSchedule((sch as any) || []);
-
       setLoading(false);
     };
-
     fetchAll();
   }, [user]);
 
   if (authLoading || !user) return null;
 
-  // Not assigned to a class
   if (!hasClass && !loading) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <h1 className="text-2xl font-bold text-foreground">My Academics</h1>
+        <h1 className="text-heading text-foreground">My Academics</h1>
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            You are not assigned to a class yet. Please contact your HOD or admin to get assigned to a department and class before you can view your academic records.
+            You are not assigned to a class yet. Please contact your HOD or admin to get assigned.
           </AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  // Attendance stats
   const totalClasses = attendance.length;
   const presentCount = attendance.filter(a => a.status === 'present').length;
   const lateCount = attendance.filter(a => a.status === 'late').length;
   const attendancePercent = totalClasses > 0 ? Math.round(((presentCount + lateCount) / totalClasses) * 100) : 0;
+  const avgPercent = marks.length > 0 ? Math.round(marks.reduce((s, m) => s + (m.marks_obtained / m.max_marks) * 100, 0) / marks.length) : 0;
 
-  // Marks stats
-  const avgPercent = marks.length > 0
-    ? Math.round(marks.reduce((s, m) => s + (m.marks_obtained / m.max_marks) * 100, 0) / marks.length)
-    : 0;
-
-  // Group marks by subject
   const marksBySubject = marks.reduce<Record<string, MarkRecord[]>>((acc, m) => {
     const key = m.subjects?.subject_name || m.subject;
     if (!acc[key]) acc[key] = [];
@@ -163,7 +115,6 @@ const StudentDashboardPage = () => {
     return acc;
   }, {});
 
-  // Group attendance by subject for summary
   const attendanceBySubject = attendance.reduce<Record<string, { total: number; present: number }>>((acc, a) => {
     const key = a.subjects?.subject_name || 'General';
     if (!acc[key]) acc[key] = { total: 0, present: 0 };
@@ -172,7 +123,6 @@ const StudentDashboardPage = () => {
     return acc;
   }, {});
 
-  // Group schedule by day
   const scheduleByDay = schedule.reduce<Record<number, ScheduleRecord[]>>((acc, s) => {
     if (!acc[s.day_of_week]) acc[s.day_of_week] = [];
     acc[s.day_of_week].push(s);
@@ -180,26 +130,33 @@ const StudentDashboardPage = () => {
   }, {});
 
   const statusIcon = (status: string) => {
-    if (status === 'present') return <CheckCircle2 className="h-4 w-4 text-primary" />;
+    if (status === 'present') return <CheckCircle2 className="h-4 w-4 text-success" />;
     if (status === 'late') return <AlertCircle className="h-4 w-4 text-accent" />;
     return <XCircle className="h-4 w-4 text-destructive" />;
   };
 
+  const statCards = [
+    { icon: CalendarDays, label: 'Attendance', value: `${attendancePercent}%`, color: 'text-primary', iconBg: 'bg-primary/10', borderColor: 'border-primary/20' },
+    { icon: BarChart3, label: 'Avg. Marks', value: `${avgPercent}%`, color: 'text-success', iconBg: 'bg-success/10', borderColor: 'border-success/20' },
+    { icon: BookOpen, label: 'Subjects', value: `${Object.keys(marksBySubject).length || '—'}`, color: 'text-accent', iconBg: 'bg-accent/10', borderColor: 'border-accent/20' },
+    { icon: Clock, label: 'Classes/Week', value: `${schedule.length || '—'}`, color: 'text-muted-foreground', iconBg: 'bg-muted', borderColor: 'border-border' },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header with class info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Academics</h1>
+          <h1 className="text-heading text-foreground">My Academics</h1>
           <p className="text-muted-foreground text-sm">Records entered by your assigned faculty</p>
         </div>
         {classInfo && (
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 py-1">
+            <Badge variant="outline" className="gap-1.5 py-1.5 px-3 rounded-lg">
               <Building2 className="h-3.5 w-3.5" />
               {classInfo.departments?.name || 'Department'}
             </Badge>
-            <Badge variant="secondary" className="gap-1.5 py-1">
+            <Badge variant="secondary" className="gap-1.5 py-1.5 px-3 rounded-lg">
               <Users className="h-3.5 w-3.5" />
               Year {classInfo.year} – Sec {classInfo.section}
             </Badge>
@@ -207,73 +164,36 @@ const StudentDashboardPage = () => {
         )}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <CalendarDays className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Attendance</p>
-              {loading ? <Skeleton className="h-7 w-16" /> : (
-                <p className="text-2xl font-bold text-foreground">{attendancePercent}%</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-accent/10">
-              <BarChart3 className="h-6 w-6 text-accent" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg. Marks</p>
-              {loading ? <Skeleton className="h-7 w-16" /> : (
-                <p className="text-2xl font-bold text-foreground">{avgPercent}%</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-muted">
-              <BookOpen className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Subjects</p>
-              {loading ? <Skeleton className="h-7 w-16" /> : (
-                <p className="text-2xl font-bold text-foreground">{Object.keys(marksBySubject).length || '—'}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-muted">
-              <Clock className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Classes/Week</p>
-              {loading ? <Skeleton className="h-7 w-16" /> : (
-                <p className="text-2xl font-bold text-foreground">{schedule.length || '—'}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Summary Cards — enhanced */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {statCards.map(({ icon: Icon, label, value, color, iconBg, borderColor }) => (
+          <Card key={label} className={cn("card-elevated stat-card border", borderColor)}>
+            <CardContent className="pt-5 pb-4 flex items-center gap-4">
+              <div className={cn("p-2.5 rounded-xl", iconBg)}>
+                <Icon className={cn("h-5 w-5", color)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">{label}</p>
+                {loading ? <Skeleton className="h-7 w-16 mt-0.5" /> : (
+                  <p className={cn("text-2xl font-bold tracking-tight", color)}>{value}</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="schedule" className="space-y-4">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="schedule" className="gap-1.5"><Clock className="h-4 w-4" />Schedule</TabsTrigger>
-          <TabsTrigger value="attendance" className="gap-1.5"><CalendarDays className="h-4 w-4" />Attendance</TabsTrigger>
-          <TabsTrigger value="marks" className="gap-1.5"><BarChart3 className="h-4 w-4" />Marks</TabsTrigger>
+        <TabsList className="w-full sm:w-auto bg-muted/50 p-1 rounded-xl">
+          <TabsTrigger value="schedule" className="gap-1.5 rounded-lg"><Clock className="h-4 w-4" />Schedule</TabsTrigger>
+          <TabsTrigger value="attendance" className="gap-1.5 rounded-lg"><CalendarDays className="h-4 w-4" />Attendance</TabsTrigger>
+          <TabsTrigger value="marks" className="gap-1.5 rounded-lg"><BarChart3 className="h-4 w-4" />Marks</TabsTrigger>
         </TabsList>
 
         {/* Schedule Tab */}
         <TabsContent value="schedule">
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
               <CardTitle className="text-lg">Weekly Timetable</CardTitle>
               <CardDescription>Schedule set by your HOD — showing assigned faculty for each period</CardDescription>
@@ -282,17 +202,23 @@ const StudentDashboardPage = () => {
               {loading ? (
                 <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
               ) : schedule.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No schedule found. Your HOD will set up the class timetable.</p>
+                <div className="text-center py-10">
+                  <Clock className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No schedule found. Your HOD will set up the class timetable.</p>
+                </div>
               ) : (
                 <div className="space-y-6">
                   {[1, 2, 3, 4, 5, 6].filter(d => scheduleByDay[d]).map(day => (
                     <div key={day}>
-                      <h3 className="font-semibold text-foreground mb-2">{DAYS[day]}</h3>
+                      <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <div className="w-1.5 h-5 rounded-full gradient-primary" />
+                        {DAYS[day]}
+                      </h3>
                       <div className="space-y-2">
                         {scheduleByDay[day].map(s => (
-                          <div key={s.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+                          <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl bg-muted/30 border hover:bg-muted/50 transition-colors">
                             <div className="flex items-center gap-3">
-                              <div className="text-sm font-mono text-muted-foreground w-[100px]">
+                              <div className="text-sm font-mono text-muted-foreground w-[100px] bg-muted/50 px-2 py-1 rounded-lg text-center">
                                 {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
                               </div>
                               <div>
@@ -300,8 +226,8 @@ const StudentDashboardPage = () => {
                                 <p className="text-xs text-muted-foreground">{s.subjects.subject_code}</p>
                               </div>
                             </div>
-                            <Badge variant="outline" className="text-xs">
-                              Faculty: {s.profiles.full_name || 'TBA'}
+                            <Badge variant="outline" className="text-xs rounded-lg">
+                              {s.profiles.full_name || 'TBA'}
                             </Badge>
                           </div>
                         ))}
@@ -317,21 +243,20 @@ const StudentDashboardPage = () => {
         {/* Attendance Tab */}
         <TabsContent value="attendance">
           <div className="space-y-4">
-            {/* Subject-wise summary */}
             {Object.keys(attendanceBySubject).length > 0 && (
-              <Card>
+              <Card className="card-elevated">
                 <CardHeader>
                   <CardTitle className="text-lg">Subject-wise Attendance</CardTitle>
                   <CardDescription>Attendance marked by your faculty per subject</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {Object.entries(attendanceBySubject).map(([subj, { total, present }]) => {
                     const pct = Math.round((present / total) * 100);
                     return (
-                      <div key={subj} className="space-y-1">
+                      <div key={subj} className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium text-foreground">{subj}</span>
-                          <span className={cn("font-medium", pct >= 75 ? "text-primary" : "text-destructive")}>
+                          <span className={cn("font-semibold", pct >= 75 ? "text-success" : "text-destructive")}>
                             {pct}% ({present}/{total})
                           </span>
                         </div>
@@ -343,12 +268,11 @@ const StudentDashboardPage = () => {
               </Card>
             )}
 
-            {/* Detailed records */}
-            <Card>
+            <Card className="card-elevated">
               <CardHeader>
                 <CardTitle className="text-lg">Attendance Records</CardTitle>
                 <CardDescription>
-                  {totalClasses > 0 ? `${presentCount} present, ${lateCount} late out of ${totalClasses} classes` : 'No records yet — faculty will mark your attendance'}
+                  {totalClasses > 0 ? `${presentCount} present, ${lateCount} late out of ${totalClasses} classes` : 'No records yet'}
                 </CardDescription>
                 {totalClasses > 0 && <Progress value={attendancePercent} className="h-2 mt-2" />}
               </CardHeader>
@@ -356,24 +280,25 @@ const StudentDashboardPage = () => {
                 {loading ? (
                   <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
                 ) : attendance.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No attendance records yet. Your faculty will mark attendance for each class.</p>
+                  <div className="text-center py-10">
+                    <CalendarDays className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                    <p className="text-muted-foreground">No attendance records yet.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto scrollbar-hide">
                     {attendance.map(a => (
-                      <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div key={a.id} className="flex items-center justify-between p-3.5 rounded-xl border hover:bg-muted/30 transition-colors">
                         <div className="flex items-center gap-3">
                           {statusIcon(a.status)}
                           <div>
-                            <p className="text-sm font-medium text-foreground">
-                              {a.subjects?.subject_name || 'General'}
-                            </p>
+                            <p className="text-sm font-medium text-foreground">{a.subjects?.subject_name || 'General'}</p>
                             <p className="text-xs text-muted-foreground">
                               {new Date(a.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                               {a.profiles?.full_name && ` · by ${a.profiles.full_name}`}
                             </p>
                           </div>
                         </div>
-                        <Badge variant={a.status === 'present' ? 'default' : a.status === 'late' ? 'secondary' : 'destructive'} className="capitalize text-xs">
+                        <Badge variant={a.status === 'present' ? 'default' : a.status === 'late' ? 'secondary' : 'destructive'} className="capitalize text-xs rounded-lg">
                           {a.status}
                         </Badge>
                       </div>
@@ -387,7 +312,7 @@ const StudentDashboardPage = () => {
 
         {/* Marks Tab */}
         <TabsContent value="marks">
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
               <CardTitle className="text-lg">Marks & Performance</CardTitle>
               <CardDescription>Exam scores entered by your assigned faculty</CardDescription>
@@ -396,29 +321,39 @@ const StudentDashboardPage = () => {
               {loading ? (
                 <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
               ) : marks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No marks recorded yet. Your faculty will enter marks after exams.</p>
+                <div className="text-center py-10">
+                  <BarChart3 className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No marks recorded yet.</p>
+                </div>
               ) : (
                 <div className="space-y-6">
                   {Object.entries(marksBySubject).map(([subjectName, records]) => {
                     const avg = Math.round(records.reduce((s, m) => s + (m.marks_obtained / m.max_marks) * 100, 0) / records.length);
                     const faculty = records[0]?.entered_by_profile?.full_name;
                     return (
-                      <div key={subjectName} className="space-y-2">
+                      <div key={subjectName} className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="font-semibold text-foreground">{subjectName}</h3>
                             {faculty && <p className="text-xs text-muted-foreground">Faculty: {faculty}</p>}
                           </div>
-                          <span className={cn("text-sm font-medium", avg >= 60 ? "text-primary" : avg >= 40 ? "text-accent" : "text-destructive")}>
+                          <Badge variant={avg >= 60 ? 'default' : avg >= 40 ? 'secondary' : 'destructive'} className="rounded-lg">
                             Avg: {avg}%
-                          </span>
+                          </Badge>
                         </div>
-                        <Progress value={avg} className="h-2" />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                        <div className="space-y-2">
                           {records.map(m => (
-                            <div key={m.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border text-sm">
-                              <span className="capitalize text-muted-foreground">{m.exam_type}</span>
-                              <span className="font-medium text-foreground">{m.marks_obtained}/{m.max_marks}</span>
+                            <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border">
+                              <div>
+                                <p className="text-sm font-medium text-foreground capitalize">{m.exam_type}</p>
+                                <p className="text-xs text-muted-foreground">{m.subjects?.subject_code || m.subject}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={cn("font-semibold text-sm", (m.marks_obtained / m.max_marks) >= 0.6 ? "text-success" : (m.marks_obtained / m.max_marks) >= 0.4 ? "text-accent" : "text-destructive")}>
+                                  {m.marks_obtained}/{m.max_marks}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{Math.round((m.marks_obtained / m.max_marks) * 100)}%</p>
+                              </div>
                             </div>
                           ))}
                         </div>

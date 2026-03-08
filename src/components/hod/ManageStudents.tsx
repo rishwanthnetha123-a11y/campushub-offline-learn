@@ -430,7 +430,7 @@ export function ManageStudents({ departmentId, departmentName }: Props) {
                 <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
                     <p className="text-sm font-medium text-foreground">{s.full_name || 'Unnamed'}</p>
-                    <p className="text-xs text-muted-foreground">{s.email}</p>
+                    <p className="text-xs text-muted-foreground">Roll: {s.roll_no || '—'} • Phone: {s.phone || '—'}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Select onValueChange={(v) => setSelectedClass(prev => ({ ...prev, [s.id]: v }))}>

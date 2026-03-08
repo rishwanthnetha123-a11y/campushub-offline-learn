@@ -6,6 +6,7 @@ import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { demoVideos, demoResources } from '@/data/demo-content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import { NoticesBanner } from '@/components/NoticesBanner';
 import { PageTransition, StaggerContainer, StaggerItem, FadeIn } from '@/components/PageTransition';
 
@@ -58,14 +59,18 @@ const HomePage = () => {
           </div>
           <div className="flex justify-center gap-4">
             <Link to="/videos">
-              <Button size="lg" className="gap-2 gradient-primary border-0 text-primary-foreground shadow-md hover:shadow-lg transition-shadow h-12 px-6 rounded-xl">
-                <Video className="h-5 w-5" />{t.home_start_learning}
-              </Button>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Button size="lg" className="gap-2 gradient-primary border-0 text-primary-foreground shadow-md hover:shadow-lg h-12 px-6 btn-morph">
+                  <Video className="h-5 w-5" />{t.home_start_learning}
+                </Button>
+              </motion.div>
             </Link>
             <Link to="/downloads">
-              <Button size="lg" variant="outline" className="gap-2 h-12 px-6 rounded-xl bg-card hover:bg-muted">
-                <Download className="h-5 w-5" />{t.home_my_downloads}
-              </Button>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Button size="lg" variant="outline" className="gap-2 h-12 px-6 btn-morph bg-card hover:bg-muted">
+                  <Download className="h-5 w-5" />{t.home_my_downloads}
+                </Button>
+              </motion.div>
             </Link>
           </div>
         </div>
@@ -128,7 +133,7 @@ const HomePage = () => {
                   <CardContent className="pt-6 pb-5">
                     <div className="flex items-start gap-4">
                       <div className={cn("p-3 rounded-xl transition-smooth", iconBg)}>
-                        <Icon className={cn("h-6 w-6", iconColor)} />
+                        <Icon className={cn("h-6 w-6 icon-morph", iconColor)} />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{title}</h3>

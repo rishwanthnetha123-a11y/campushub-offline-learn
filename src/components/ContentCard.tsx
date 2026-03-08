@@ -14,6 +14,7 @@ import { OfflineStatusBadge } from './OfflineStatusBadge';
 import { ProgressRing } from './ProgressRing';
 import { DownloadButton } from './DownloadButton';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface ContentCardProps {
   content: VideoType | Resource;
@@ -62,9 +63,15 @@ export const ContentCard = ({
   const Icon = isVideo ? Video : getResourceIcon(resource.type);
 
   return (
+    <motion.div
+      layout
+      whileHover={{ y: -4, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
     <Card 
       className={cn(
-        "group hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden card-interactive",
+        "group hover:shadow-md cursor-pointer overflow-hidden card-morph",
         isDownloaded && "ring-2 ring-success/20",
         className
       )}
@@ -91,15 +98,23 @@ export const ContentCard = ({
         {/* Fallback icon (shows when no thumbnail or on load error) */}
         <Icon className="h-12 w-12 text-muted-foreground/50 relative z-0" />
         
-        {/* Play button overlay for videos */}
+        {/* Play button overlay for videos — morph scale */}
         {isVideo && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+          <motion.div 
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100"
+            initial={false}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div 
+              className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg blob-morph"
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <svg className="h-6 w-6 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
         
         {/* Status badge & bookmark */}
@@ -207,5 +222,6 @@ export const ContentCard = ({
         )}
       </CardContent>
     </Card>
+    </motion.div>
   );
 };

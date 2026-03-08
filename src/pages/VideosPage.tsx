@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES } from '@/lib/languages';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { CardGridSkeleton } from '@/components/ui/skeleton';
 import type { Video } from '@/types/content';
 
 const VideosPage = () => {
@@ -131,21 +132,25 @@ const VideosPage = () => {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredVideos.map(video => {
-          const progress = getProgress(video.id);
-          const quiz = demoQuizzes.find(q => q.contentId === video.id);
-          const quizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
-          return (
-            <ContentCard key={video.id} content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
-              quizCompleted={progress?.quizCompleted || false}
-              isBookmarked={isBookmarked(video.id)}
-              onBookmarkToggle={() => toggleBookmark(video.id)}
-              onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
-              onClick={() => navigate(`/video/${video.id}`)} />
-          );
-        })}
-      </div>
+      {loading ? (
+        <CardGridSkeleton count={6} columns="sm:grid-cols-2 lg:grid-cols-3" />
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredVideos.map(video => {
+            const progress = getProgress(video.id);
+            const quiz = demoQuizzes.find(q => q.contentId === video.id);
+            const quizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
+            return (
+              <ContentCard key={video.id} content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
+                quizCompleted={progress?.quizCompleted || false}
+                isBookmarked={isBookmarked(video.id)}
+                onBookmarkToggle={() => toggleBookmark(video.id)}
+                onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
+                onClick={() => navigate(`/video/${video.id}`)} />
+            );
+          })}
+        </div>
+      )}
 
       {filteredVideos.length === 0 && (
         <div className="text-center py-12">

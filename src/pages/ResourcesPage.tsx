@@ -9,6 +9,7 @@ import { subjects } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES } from '@/lib/languages';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { CardGridSkeleton } from '@/components/ui/skeleton';
 import type { Resource } from '@/types/content';
 
 const resourceTypeIcons = { pdf: FileText, audio: Music, notes: StickyNote };
@@ -97,16 +98,20 @@ const ResourcesPage = () => {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredResources.map(resource => {
-          const progress = getProgress(resource.id);
-          return (
-            <ContentCard key={resource.id} content={resource} type="resource" isDownloaded={isDownloaded(resource.id)}
-              learningProgress={progress?.progress} onDownload={() => markAsDownloaded(resource.id, 'resource')}
-              onRemove={() => removeDownload(resource.id)} onClick={() => navigate(`/resource/${resource.id}`)} />
-          );
-        })}
-      </div>
+      {loading ? (
+        <CardGridSkeleton count={6} columns="sm:grid-cols-2 lg:grid-cols-3" />
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredResources.map(resource => {
+            const progress = getProgress(resource.id);
+            return (
+              <ContentCard key={resource.id} content={resource} type="resource" isDownloaded={isDownloaded(resource.id)}
+                learningProgress={progress?.progress} onDownload={() => markAsDownloaded(resource.id, 'resource')}
+                onRemove={() => removeDownload(resource.id)} onClick={() => navigate(`/resource/${resource.id}`)} />
+            );
+          })}
+        </div>
+      )}
 
       {filteredResources.length === 0 && (
         <div className="text-center py-12">

@@ -9,8 +9,10 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -164,6 +166,29 @@ export function AdminStudents() {
     }
   };
 
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDeleteUser = async (userId: string) => {
+    setDeleting(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setStudents(prev => prev.filter(s => s.id !== userId));
+      if (expandedStudent === userId) {
+        setExpandedStudent(null);
+        setStudentDetails(null);
+      }
+    } catch (err: any) {
+      console.error('Delete failed:', err);
+      alert(err.message || 'Failed to delete user');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const filteredStudents = students.filter(student =>
     student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -261,11 +286,11 @@ export function AdminStudents() {
                 open={expandedStudent === student.id}
                 onOpenChange={() => toggleStudentDetails(student.id)}
               >
-                <div className="border rounded-lg">
+                <div className="border rounded-lg relative">
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="w-full justify-between p-4 h-auto"
+                      className="w-full justify-between p-4 h-auto pr-12"
                     >
                       <div className="flex items-center gap-4">
                         <div className="text-left">
@@ -299,6 +324,27 @@ export function AdminStudents() {
                       </div>
                     </Button>
                   </CollapsibleTrigger>
+                  <div className="absolute right-2 top-3 z-10">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                          {deleting === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete User Permanently?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete <strong>{student.full_name || student.email}</strong> and all their data. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteUser(student.id)}>Delete Permanently</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                   
                   <CollapsibleContent>
                     <div className="px-4 pb-4 space-y-4 border-t">

@@ -32,6 +32,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Profile = Tables<'profiles'>;
@@ -183,7 +184,7 @@ export function AdminStudents() {
       }
     } catch (err: any) {
       console.error('Delete failed:', err);
-      alert(err.message || 'Failed to delete user');
+      toast.error(err.message || 'Failed to delete user');
     } finally {
       setDeleting(null);
     }

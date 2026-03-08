@@ -87,7 +87,7 @@ const AuthPage = () => {
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-            body: JSON.stringify({ phone }),
+            body: JSON.stringify({ phone, action: 'send' }),
           }
         );
         const data = await response.json();

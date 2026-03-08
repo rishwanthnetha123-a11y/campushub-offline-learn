@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, LogOut, ArrowLeft, BookOpen, Calendar } from 'lucide-react';
+import { LayoutDashboard, LogOut, ArrowLeft, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
 import campusHubLogo from '@/assets/campus-hub-logo.png';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/faculty', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/faculty/videos', label: 'My Videos', icon: Video },
 ];
 
 export function FacultyLayout({ children }: { children: ReactNode }) {

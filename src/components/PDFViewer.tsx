@@ -130,7 +130,7 @@ export const PDFViewer = ({
                 setHighlightMode(!highlightMode);
                 toast.info(highlightMode ? 'Highlight mode off' : 'Highlight mode on — select text to highlight');
               }}
-              className={cn("h-8 w-8", highlightMode && "text-yellow-500 bg-yellow-500/10")}
+              className={cn("h-8 w-8", highlightMode && "text-accent bg-accent/10")}
               title="Toggle highlight mode"
             >
               <Highlighter className="h-4 w-4" />
@@ -143,7 +143,7 @@ export const PDFViewer = ({
 
             {/* Share */}
             <Button variant="ghost" size="icon" onClick={handleShare} className="h-8 w-8" title="Share link">
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+              {copied ? <Check className="h-4 w-4 text-primary" /> : <Share2 className="h-4 w-4" />}
             </Button>
 
             {/* Open external */}
@@ -157,7 +157,7 @@ export const PDFViewer = ({
       {/* PDF View */}
       <div className={cn(
         "flex-1 min-h-[500px] flex items-start justify-center overflow-auto p-4 transition-colors duration-300",
-        darkMode ? "bg-zinc-900" : "bg-muted-foreground/5"
+        darkMode ? "bg-background" : "bg-muted-foreground/5"
       )}>
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">

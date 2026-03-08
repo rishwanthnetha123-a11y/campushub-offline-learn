@@ -73,6 +73,9 @@ const StudentDashboardPage = () => {
       const { data: cls } = await supabase.from('classes').select('year, section, departments(name)').eq('id', prof.class_id).single();
       setClassInfo(cls as any);
 
+      const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('class_id', prof.class_id);
+      setClassStrength(count ?? 0);
+
       const { data: att } = await supabase.from('attendance').select('id, date, status, subject_id, subjects(subject_name, subject_code), profiles!attendance_marked_by_fkey(full_name)').eq('student_id', user.id).order('date', { ascending: false });
       setAttendance((att as any) || []);
 

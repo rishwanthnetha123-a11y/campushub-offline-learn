@@ -118,10 +118,18 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
             {!isLoading && (
               user ? (
-                <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex gap-2">
-                  <LogOut className="h-4 w-4" />
-                  {t.nav_sign_out}
-                </Button>
+                <>
+                  <Link to="/profile">
+                    <Button variant="ghost" size="sm" className="hidden md:flex gap-2">
+                      <UserCircle className="h-4 w-4" />
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:flex gap-2">
+                    <LogOut className="h-4 w-4" />
+                    {t.nav_sign_out}
+                  </Button>
+                </>
               ) : (
                 <Link to="/auth">
                   <Button variant="outline" size="sm" className="hidden md:flex gap-2">
@@ -196,13 +204,23 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
               <div className="border-t pt-2 mt-2">
                 {user ? (
-                  <button
-                    onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted w-full text-left"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    {t.nav_sign_out}
-                  </button>
+                  <>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+                    >
+                      <UserCircle className="h-5 w-5" />
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted w-full text-left"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      {t.nav_sign_out}
+                    </button>
+                  </>
                 ) : (
                   <Link
                     to="/auth"

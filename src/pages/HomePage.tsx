@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Video, FileText, Download, Trophy, Wifi, WifiOff, Zap, HardDrive, CheckCircle2 } from 'lucide-react';
+import { Video, FileText, Download, Trophy, Wifi, WifiOff, Zap, HardDrive, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
@@ -13,10 +13,10 @@ const HomePage = () => {
   const stats = getStorageStats();
 
   const features = [
-    { icon: Video, title: t.home_offline_videos, description: t.home_offline_videos_desc, link: '/videos', color: 'text-primary' },
-    { icon: FileText, title: t.home_learning_resources, description: t.home_learning_resources_desc, link: '/resources', color: 'text-success' },
-    { icon: Trophy, title: t.home_track_progress, description: t.home_track_progress_desc, link: '/progress', color: 'text-accent' },
-    { icon: Download, title: t.home_download_manager, description: t.home_download_manager_desc, link: '/downloads', color: 'text-muted-foreground' },
+    { icon: Video, title: t.home_offline_videos, description: t.home_offline_videos_desc, link: '/videos', gradient: 'from-primary/10 to-primary/5', iconColor: 'text-primary', iconBg: 'bg-primary/10' },
+    { icon: FileText, title: t.home_learning_resources, description: t.home_learning_resources_desc, link: '/resources', gradient: 'from-success/10 to-success/5', iconColor: 'text-success', iconBg: 'bg-success/10' },
+    { icon: Trophy, title: t.home_track_progress, description: t.home_track_progress_desc, link: '/progress', gradient: 'from-accent/10 to-accent/5', iconColor: 'text-accent', iconBg: 'bg-accent/10' },
+    { icon: Download, title: t.home_download_manager, description: t.home_download_manager_desc, link: '/downloads', gradient: 'from-muted to-muted/50', iconColor: 'text-muted-foreground', iconBg: 'bg-muted' },
   ];
 
   const benefits = [
@@ -25,57 +25,108 @@ const HomePage = () => {
     { icon: HardDrive, text: t.home_low_end },
   ];
 
+  const statCards = [
+    { value: demoVideos.length, label: t.home_videos_available, color: 'text-primary', borderColor: 'border-primary/20' },
+    { value: stats.totalDownloads, label: t.home_downloaded, color: 'text-success', borderColor: 'border-success/20' },
+    { value: stats.completedCount, label: t.home_completed, color: 'text-accent', borderColor: 'border-accent/20' },
+    { value: stats.quizzesPassed, label: t.home_quizzes_passed, color: 'text-foreground', borderColor: 'border-border' },
+  ];
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      <section className="text-center py-8">
-        <h1 className="text-heading-lg text-foreground mb-4">{t.home_hero_title}</h1>
-        <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto mb-6">{t.home_hero_desc}</p>
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {benefits.map(({ icon: Icon, text }) => (
-            <div key={text} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success text-sm font-medium">
-              <Icon className="h-4 w-4" />{text}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-center gap-4">
-          <Link to="/videos"><Button size="lg" className="gap-2"><Video className="h-5 w-5" />{t.home_start_learning}</Button></Link>
-          <Link to="/downloads"><Button size="lg" variant="outline" className="gap-2"><Download className="h-5 w-5" />{t.home_my_downloads}</Button></Link>
+    <div className="space-y-10 animate-fade-in">
+      {/* Hero Section */}
+      <section className="relative text-center py-12 rounded-2xl gradient-hero overflow-hidden">
+        <div className="relative z-10 max-w-3xl mx-auto px-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-scale-in">
+            <Sparkles className="h-4 w-4" />
+            {isOnline ? 'Connected — sync & download content' : 'Offline mode — learning continues'}
+          </div>
+          <h1 className="text-heading-xl text-foreground mb-4 tracking-tight">
+            {t.home_hero_title}
+          </h1>
+          <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            {t.home_hero_desc}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {benefits.map(({ icon: Icon, text }) => (
+              <div key={text} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success text-sm font-medium border border-success/20">
+                <Icon className="h-4 w-4" />{text}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center gap-4">
+            <Link to="/videos">
+              <Button size="lg" className="gap-2 gradient-primary border-0 text-primary-foreground shadow-md hover:shadow-lg transition-shadow h-12 px-6 rounded-xl">
+                <Video className="h-5 w-5" />{t.home_start_learning}
+              </Button>
+            </Link>
+            <Link to="/downloads">
+              <Button size="lg" variant="outline" className="gap-2 h-12 px-6 rounded-xl bg-card hover:bg-muted">
+                <Download className="h-5 w-5" />{t.home_my_downloads}
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
+      {/* Stats Grid */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="text-center"><CardContent className="pt-6"><div className="text-3xl font-bold text-primary mb-1">{demoVideos.length}</div><p className="text-sm text-muted-foreground">{t.home_videos_available}</p></CardContent></Card>
-        <Card className="text-center"><CardContent className="pt-6"><div className="text-3xl font-bold text-success mb-1">{stats.totalDownloads}</div><p className="text-sm text-muted-foreground">{t.home_downloaded}</p></CardContent></Card>
-        <Card className="text-center"><CardContent className="pt-6"><div className="text-3xl font-bold text-accent mb-1">{stats.completedCount}</div><p className="text-sm text-muted-foreground">{t.home_completed}</p></CardContent></Card>
-        <Card className="text-center"><CardContent className="pt-6"><div className="text-3xl font-bold text-foreground mb-1">{stats.quizzesPassed}</div><p className="text-sm text-muted-foreground">{t.home_quizzes_passed}</p></CardContent></Card>
+        {statCards.map(({ value, label, color, borderColor }) => (
+          <Card key={label} className={cn("text-center card-elevated stat-card border", borderColor)}>
+            <CardContent className="pt-6 pb-4">
+              <div className={cn("text-3xl font-bold mb-1 tracking-tight", color)}>{value}</div>
+              <p className="text-xs text-muted-foreground font-medium">{label}</p>
+            </CardContent>
+          </Card>
+        ))}
       </section>
 
-      <Card className={cn("border-2", isOnline ? "border-success/30 bg-success/5" : "border-warning/30 bg-warning/5")}>
-        <CardContent className="py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {isOnline ? <Wifi className="h-6 w-6 text-success" /> : <WifiOff className="h-6 w-6 text-warning" />}
+      {/* Connection Status Banner */}
+      <Card className={cn(
+        "overflow-hidden border",
+        isOnline ? "border-success/30" : "border-warning/30"
+      )}>
+        <CardContent className="py-4 px-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={cn(
+              "p-2.5 rounded-xl",
+              isOnline ? "bg-success/10" : "bg-warning/10"
+            )}>
+              {isOnline ? <Wifi className="h-6 w-6 text-success" /> : <WifiOff className="h-6 w-6 text-warning animate-pulse-soft" />}
+            </div>
             <div>
-              <p className="font-medium">{isOnline ? t.home_online : t.home_offline}</p>
+              <p className="font-semibold text-foreground">{isOnline ? t.home_online : t.home_offline}</p>
               <p className="text-sm text-muted-foreground">{isOnline ? t.home_online_desc : t.home_offline_desc}</p>
             </div>
           </div>
-          {isOnline && <Link to="/videos"><Button variant="outline" size="sm">{t.home_download_content}</Button></Link>}
+          {isOnline && (
+            <Link to="/videos">
+              <Button variant="outline" size="sm" className="gap-2 border-success/30 text-success hover:bg-success/5">
+                {t.home_download_content}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          )}
         </CardContent>
       </Card>
 
+      {/* Features Grid */}
       <section>
-        <h2 className="text-heading text-foreground mb-4">{t.home_platform_features}</h2>
+        <h2 className="text-heading text-foreground mb-5">{t.home_platform_features}</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          {features.map(({ icon: Icon, title, description, link, color }) => (
+          {features.map(({ icon: Icon, title, description, link, iconColor, iconBg }) => (
             <Link key={title} to={link}>
-              <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
-                <CardContent className="pt-6">
+              <Card className="h-full card-elevated cursor-pointer group border">
+                <CardContent className="pt-6 pb-5">
                   <div className="flex items-start gap-4">
-                    <div className={cn("p-3 rounded-lg bg-muted", color)}><Icon className="h-6 w-6" /></div>
+                    <div className={cn("p-3 rounded-xl", iconBg)}>
+                      <Icon className={cn("h-6 w-6", iconColor)} />
+                    </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{description}</p>
+                      <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{description}</p>
                     </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -84,9 +135,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section className="bg-muted rounded-xl p-6">
-        <h2 className="text-heading text-foreground mb-4">{t.home_why_offline}</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+      {/* Why Offline Section */}
+      <section className="bg-muted/50 rounded-2xl p-8 border">
+        <h2 className="text-heading text-foreground mb-6">{t.home_why_offline}</h2>
+        <div className="grid md:grid-cols-3 gap-8">
           {[
             { title: t.home_rural, desc: t.home_rural_desc },
             { title: t.home_data_costs, desc: t.home_data_costs_desc },
@@ -94,9 +146,9 @@ const HomePage = () => {
           ].map(({ title, desc }) => (
             <div key={title}>
               <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-success" />{title}
+                <CheckCircle2 className="h-5 w-5 text-success shrink-0" />{title}
               </h3>
-              <p className="text-sm text-muted-foreground">{desc}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>

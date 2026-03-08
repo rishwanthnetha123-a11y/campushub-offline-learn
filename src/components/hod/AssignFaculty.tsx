@@ -165,7 +165,7 @@ export function AssignFaculty({ departmentId }: { departmentId: string }) {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleRemove(a.id)}>Remove</AlertDialogAction>
+                              <AlertDialogAction onClick={() => handleRemove(a.id, a.faculty_id, a.class_id)}>Remove</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>

@@ -877,6 +877,7 @@ export type Database = {
       videos: {
         Row: {
           created_at: string
+          department_id: string | null
           description: string | null
           display_order: number | null
           duration: string | null
@@ -889,6 +890,7 @@ export type Database = {
           language: string
           resolution: string | null
           subject: string
+          subject_id: string | null
           thumbnail_url: string | null
           title: string
           topic: string | null
@@ -898,6 +900,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          department_id?: string | null
           description?: string | null
           display_order?: number | null
           duration?: string | null
@@ -910,6 +913,7 @@ export type Database = {
           language?: string
           resolution?: string | null
           subject: string
+          subject_id?: string | null
           thumbnail_url?: string | null
           title: string
           topic?: string | null
@@ -919,6 +923,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          department_id?: string | null
           description?: string | null
           display_order?: number | null
           duration?: string | null
@@ -931,6 +936,7 @@ export type Database = {
           language?: string
           resolution?: string | null
           subject?: string
+          subject_id?: string | null
           thumbnail_url?: string | null
           title?: string
           topic?: string | null
@@ -938,7 +944,22 @@ export type Database = {
           uploaded_by?: string | null
           video_url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "videos_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "videos_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       watch_analytics: {
         Row: {

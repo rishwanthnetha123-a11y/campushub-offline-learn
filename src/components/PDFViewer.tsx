@@ -1,15 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { 
-  FileText, 
-  ZoomIn, 
-  ZoomOut, 
-  ChevronLeft, 
-  ChevronRight,
-  Download,
-  ExternalLink
+  FileText, ZoomIn, ZoomOut, ChevronLeft, ChevronRight,
+  Download, ExternalLink, Moon, Sun, Share2, Copy, Check, Highlighter,
+  RotateCcw, Maximize
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PDFViewerProps {
   url: string;
@@ -29,6 +26,9 @@ export const PDFViewer = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(100);
   const [isLoading, setIsLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [highlightMode, setHighlightMode] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= pages) {
@@ -38,77 +38,116 @@ export const PDFViewer = ({
   };
 
   const handleZoom = (delta: number) => {
-    setZoom(prev => Math.min(200, Math.max(50, prev + delta)));
+    setZoom(prev => Math.min(250, Math.max(50, prev + delta)));
   };
 
-  const openInNewTab = () => {
-    window.open(url, '_blank');
+  const resetZoom = () => setZoom(100);
+
+  const openInNewTab = () => window.open(url, '_blank');
+
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title}.pdf`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Download started');
   };
+
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch (e) {
+        // User cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success('Link copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [title, url]);
+
+  const progressPercent = Math.round((currentPage / pages) * 100);
 
   return (
-    <div className={cn("flex flex-col bg-muted rounded-lg overflow-hidden", className)}>
+    <div className={cn("flex flex-col bg-muted rounded-xl overflow-hidden border", className)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 bg-card border-b">
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-muted-foreground" />
-          <span className="font-medium text-sm truncate max-w-[200px]">{title}</span>
+      <div className="flex items-center justify-between p-2 sm:p-3 bg-card border-b gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <FileText className="h-5 w-5 text-primary shrink-0" />
+          <span className="font-medium text-sm truncate max-w-[180px]">{title}</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 flex-wrap">
           {/* Pagination */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="h-8 w-8"
-            >
+          <div className="flex items-center gap-0.5 bg-muted rounded-lg px-1">
+            <Button variant="ghost" size="icon" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="h-8 w-8">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm min-w-[60px] text-center">
-              {currentPage} / {pages}
+            <span className="text-sm min-w-[50px] text-center tabular-nums font-mono">
+              {currentPage}/{pages}
             </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === pages}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pages} className="h-8 w-8">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Zoom */}
-          <div className="flex items-center gap-1 border-l pl-2 ml-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleZoom(-10)}
-              className="h-8 w-8"
-            >
+          <div className="flex items-center gap-0.5 border-l pl-1 ml-1">
+            <Button variant="ghost" size="icon" onClick={() => handleZoom(-25)} className="h-8 w-8">
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <span className="text-sm min-w-[40px] text-center">{zoom}%</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleZoom(10)}
-              className="h-8 w-8"
-            >
+            <button onClick={resetZoom} className="text-xs min-w-[42px] text-center tabular-nums font-mono hover:text-primary transition-colors">
+              {zoom}%
+            </button>
+            <Button variant="ghost" size="icon" onClick={() => handleZoom(25)} className="h-8 w-8">
               <ZoomIn className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1 border-l pl-2 ml-2">
+          {/* Tools */}
+          <div className="flex items-center gap-0.5 border-l pl-1 ml-1">
+            {/* Dark mode toggle */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={openInNewTab}
-              className="h-8 w-8"
+              onClick={() => setDarkMode(!darkMode)}
+              className={cn("h-8 w-8", darkMode && "text-primary bg-primary/10")}
+              title="Toggle dark mode"
             >
+              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
+            {/* Highlight toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setHighlightMode(!highlightMode);
+                toast.info(highlightMode ? 'Highlight mode off' : 'Highlight mode on — select text to highlight');
+              }}
+              className={cn("h-8 w-8", highlightMode && "text-accent bg-accent/10")}
+              title="Toggle highlight mode"
+            >
+              <Highlighter className="h-4 w-4" />
+            </Button>
+
+            {/* Download */}
+            <Button variant="ghost" size="icon" onClick={handleDownload} className="h-8 w-8" title="Download PDF">
+              <Download className="h-4 w-4" />
+            </Button>
+
+            {/* Share */}
+            <Button variant="ghost" size="icon" onClick={handleShare} className="h-8 w-8" title="Share link">
+              {copied ? <Check className="h-4 w-4 text-primary" /> : <Share2 className="h-4 w-4" />}
+            </Button>
+
+            {/* Open external */}
+            <Button variant="ghost" size="icon" onClick={openInNewTab} className="h-8 w-8" title="Open in new tab">
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>
@@ -116,36 +155,47 @@ export const PDFViewer = ({
       </div>
 
       {/* PDF View */}
-      <div className="flex-1 min-h-[400px] bg-muted-foreground/10 flex items-center justify-center overflow-auto p-4">
+      <div className={cn(
+        "flex-1 min-h-[500px] flex items-start justify-center overflow-auto p-4 transition-colors duration-300",
+        darkMode ? "bg-background" : "bg-muted-foreground/5"
+      )}>
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
             <div className="text-center">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2 animate-pulse" />
               <p className="text-sm text-muted-foreground">Loading PDF...</p>
             </div>
           </div>
         )}
-        
-        <iframe
-          src={`${url}#page=${currentPage}&zoom=${zoom}`}
-          className="w-full h-full min-h-[500px] bg-white rounded shadow-lg"
-          style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-          onLoad={() => setIsLoading(false)}
-          title={title}
-        />
-      </div>
 
-      {/* Progress indicator */}
-      <div className="p-2 bg-card border-t">
-        <div className="progress-track">
-          <div 
-            className="progress-fill"
-            style={{ width: `${(currentPage / pages) * 100}%` }}
+        <div className={cn(
+          "transition-all duration-300 rounded-lg shadow-lg overflow-hidden",
+          darkMode && "invert hue-rotate-180"
+        )}
+          style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+        >
+          <iframe
+            src={`${url}#page=${currentPage}`}
+            className="w-[800px] h-[1000px] bg-white border-0"
+            onLoad={() => setIsLoading(false)}
+            title={title}
           />
         </div>
-        <p className="text-xs text-muted-foreground mt-1 text-center">
-          {Math.round((currentPage / pages) * 100)}% completed
-        </p>
+      </div>
+
+      {/* Progress bar */}
+      <div className="px-4 py-2 bg-card border-t">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground tabular-nums font-mono min-w-[36px] text-right">
+            {progressPercent}%
+          </span>
+        </div>
       </div>
     </div>
   );

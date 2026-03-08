@@ -15,7 +15,7 @@ export default function HodVideosPage() {
   }, [authLoading, isHod, user, navigate]);
 
   if (authLoading) return <HodLayout><Skeleton className="h-64 w-full" /></HodLayout>;
-  if (!isHod) return null;
+  if (!isHod) return <HodLayout><div className="text-center py-12"><p className="text-muted-foreground">You do not have HOD access.</p></div></HodLayout>;
 
   return (
     <HodLayout>

@@ -52,7 +52,8 @@ export default function HodDashboardPage() {
   if (!isReady) {
     return <HodLayout><div className="space-y-4"><Skeleton className="h-8 w-64" /><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-28" />)}</div></div></HodLayout>;
   }
-  if (!isHod) return null;
+  if (!isHod) return <HodLayout><div className="text-center py-12"><p className="text-muted-foreground">You do not have HOD access. Please contact an administrator.</p></div></HodLayout>;
+  if (!departmentId) return <HodLayout><div className="text-center py-12"><p className="text-muted-foreground">No department assigned to your profile. Please contact an administrator to assign your department.</p></div></HodLayout>;
 
   const summaryCards = [
     { icon: Users, label: 'Faculty', value: faculty.length, loading: facultyLoading },

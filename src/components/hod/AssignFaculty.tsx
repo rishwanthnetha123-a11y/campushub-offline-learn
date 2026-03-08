@@ -38,6 +38,10 @@ export function AssignFaculty({ departmentId }: { departmentId: string }) {
           throw error;
         }
       } else {
+        // Also ensure faculty_classes entry exists
+        await (supabase as any)
+          .from('faculty_classes')
+          .upsert({ faculty_id: facultyId, class_id: classId }, { onConflict: 'faculty_id,class_id', ignoreDuplicates: true });
         toast.success('Faculty assigned');
         setFacultyId(''); setClassId(''); setSubjectId('');
         refetch();

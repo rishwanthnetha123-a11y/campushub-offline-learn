@@ -57,6 +57,7 @@ const StudentDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [hasClass, setHasClass] = useState(true);
+  const [classStrength, setClassStrength] = useState<number>(0);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');

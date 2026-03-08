@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Video as VideoIcon, Globe } from 'lucide-react';
+import { Search, Video as VideoIcon, Globe, Bookmark } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
+import { useBookmarks } from '@/hooks/use-bookmarks';
 import { subjects, demoQuizzes } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES } from '@/lib/languages';
@@ -15,11 +16,13 @@ import type { Video } from '@/types/content';
 const VideosPage = () => {
   const navigate = useNavigate();
   const { isDownloaded, markAsDownloaded, removeDownload, getProgress, getBestQuizScore } = useOfflineStorage();
+  const { isBookmarked, toggleBookmark, bookmarkedIds } = useBookmarks();
   const { language, t } = useLanguage();
   const { user } = useAuthContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [showBookmarked, setShowBookmarked] = useState(false);
   const [dbVideos, setDbVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +78,8 @@ const VideosPage = () => {
       video.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = !selectedSubject || video.subject === selectedSubject;
     const matchesLanguage = !selectedLanguage || video.language === selectedLanguage;
-    return matchesSearch && matchesSubject && matchesLanguage;
+    const matchesBookmark = !showBookmarked || isBookmarked(video.id);
+    return matchesSearch && matchesSubject && matchesLanguage && matchesBookmark;
   });
 
   return (
@@ -88,7 +92,15 @@ const VideosPage = () => {
           </h1>
           <p className="text-muted-foreground">{dbVideos.length} {t.videos_subtitle}</p>
         </div>
-      </div>
+        <Button
+          variant={showBookmarked ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowBookmarked(!showBookmarked)}
+          className="flex items-center gap-1"
+        >
+          <Bookmark className={`h-4 w-4 ${showBookmarked ? 'fill-current' : ''}`} />
+          Bookmarked ({bookmarkedIds.size})
+        </Button>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -125,7 +137,10 @@ const VideosPage = () => {
           const quizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
           return (
             <ContentCard key={video.id} content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
-              quizCompleted={progress?.quizCompleted || false} onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
+              quizCompleted={progress?.quizCompleted || false}
+              isBookmarked={isBookmarked(video.id)}
+              onBookmarkToggle={() => toggleBookmark(video.id)}
+              onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
               onClick={() => navigate(`/video/${video.id}`)} />
           );
         })}

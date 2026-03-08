@@ -9,30 +9,45 @@ import { subjects, demoQuizzes } from '@/data/demo-content';
 import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES } from '@/lib/languages';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import type { Video } from '@/types/content';
 
 const VideosPage = () => {
   const navigate = useNavigate();
   const { isDownloaded, markAsDownloaded, removeDownload, getProgress, getBestQuizScore } = useOfflineStorage();
   const { language, t } = useLanguage();
+  const { user } = useAuthContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [dbVideos, setDbVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Auto-set content language filter from global language
   useEffect(() => {
-    setSelectedLanguage(null); // reset to show all when global lang changes
+    setSelectedLanguage(null);
   }, [language]);
 
   useEffect(() => {
     const fetchVideos = async () => {
-      const { data, error } = await supabase
+      // Get student's department_id if logged in
+      let departmentId: string | null = null;
+      if (user) {
+        const { data: prof } = await supabase.from('profiles').select('department_id').eq('id', user.id).single();
+        departmentId = prof?.department_id || null;
+      }
+
+      let query = supabase
         .from('videos')
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
+
+      // If student has a department, show only department videos + videos without department (admin-uploaded)
+      if (departmentId) {
+        query = query.or(`department_id.eq.${departmentId},department_id.is.null`);
+      }
+
+      const { data, error } = await query;
 
       if (!error && data) {
         const mapped: Video[] = data.map((v, i) => ({
@@ -48,7 +63,7 @@ const VideosPage = () => {
       setLoading(false);
     };
     fetchVideos();
-  }, []);
+  }, [user]);
 
   const allSubjects = useMemo(() => {
     const s = new Set([...subjects, ...dbVideos.map(v => v.subject)]);

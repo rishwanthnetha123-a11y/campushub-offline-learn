@@ -31,6 +31,8 @@ import HodStudentsPage from "./pages/HodStudentsPage";
 import AcceptInvitePage from "./pages/AcceptInvitePage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentProfilePage from "./pages/StudentProfilePage";
+import HodVideosPage from "./pages/HodVideosPage";
+import FacultyVideosPage from "./pages/FacultyVideosPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,9 +57,11 @@ const App = () => (
               <Route path="/hod/schedule" element={<HodSchedulePage />} />
               <Route path="/hod/students" element={<HodStudentsPage />} />
               <Route path="/hod/analytics" element={<HodAnalyticsPage />} />
+              <Route path="/hod/videos" element={<HodVideosPage />} />
               {/* Faculty routes */}
               <Route path="/faculty" element={<FacultyDashboardPage />} />
               <Route path="/faculty/class/:classId" element={<FacultyClassWorkspacePage />} />
+              <Route path="/faculty/videos" element={<FacultyVideosPage />} />
               <Route path="/*" element={
                 <AppLayout>
                   <Routes>

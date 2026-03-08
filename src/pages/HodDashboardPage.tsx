@@ -6,7 +6,7 @@ import { HodLayout } from '@/components/hod/HodLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Users, BookOpen, GraduationCap, Calendar, BarChart3 } from 'lucide-react';
+import { Building2, Users, BookOpen, GraduationCap, Calendar, BarChart3, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function HodDashboardPage() {
@@ -113,12 +113,13 @@ export default function HodDashboardPage() {
         </Card>
 
         {/* Quick Access Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
             { label: 'Manage Subjects', desc: 'Create and edit subjects', path: '/hod/subjects', icon: BookOpen },
             { label: 'Assign Faculty', desc: 'Map faculty to subjects', path: '/hod/assign-faculty', icon: Users },
             { label: 'Manage Students', desc: 'Assign students to classes', path: '/hod/students', icon: GraduationCap },
             { label: 'Create Schedule', desc: 'Build weekly timetable', path: '/hod/schedule', icon: Calendar },
+            { label: 'Subject Videos', desc: 'Upload & manage videos', path: '/hod/videos', icon: Video },
             { label: 'Analytics', desc: 'View department stats', path: '/hod/analytics', icon: BarChart3 },
           ].map(item => (
             <Card key={item.path} className="cursor-pointer hover:shadow-md transition-shadow border-l-4 border-l-primary" onClick={() => navigate(item.path)}>

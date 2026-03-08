@@ -286,11 +286,11 @@ export function AdminStudents() {
                 open={expandedStudent === student.id}
                 onOpenChange={() => toggleStudentDetails(student.id)}
               >
-                <div className="border rounded-lg">
+                <div className="border rounded-lg relative">
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="w-full justify-between p-4 h-auto"
+                      className="w-full justify-between p-4 h-auto pr-12"
                     >
                       <div className="flex items-center gap-4">
                         <div className="text-left">
@@ -324,7 +324,7 @@ export function AdminStudents() {
                       </div>
                     </Button>
                   </CollapsibleTrigger>
-                  <div className="absolute right-2 top-3">
+                  <div className="absolute right-2 top-3 z-10">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
@@ -345,8 +345,6 @@ export function AdminStudents() {
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>
-                    </Button>
-                  </CollapsibleTrigger>
                   
                   <CollapsibleContent>
                     <div className="px-4 pb-4 space-y-4 border-t">

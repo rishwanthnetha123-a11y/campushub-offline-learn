@@ -184,7 +184,7 @@ export function AdminStudents() {
       }
     } catch (err: any) {
       console.error('Delete failed:', err);
-      alert(err.message || 'Failed to delete user');
+      toast.error(err.message || 'Failed to delete user');
     } finally {
       setDeleting(null);
     }

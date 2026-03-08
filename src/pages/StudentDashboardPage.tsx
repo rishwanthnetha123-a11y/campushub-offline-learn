@@ -144,7 +144,7 @@ const StudentDashboardPage = () => {
     { icon: BarChart3, label: 'Avg. Marks', value: `${avgPercent}%`, color: 'text-success', iconBg: 'bg-success/10', borderColor: 'border-success/20' },
     { icon: BookOpen, label: 'Subjects', value: `${Object.keys(marksBySubject).length || '—'}`, color: 'text-accent', iconBg: 'bg-accent/10', borderColor: 'border-accent/20' },
     { icon: Clock, label: 'Classes/Week', value: `${schedule.length || '—'}`, color: 'text-muted-foreground', iconBg: 'bg-muted', borderColor: 'border-border' },
-  ];
+    { icon: Users, label: 'Class Strength', value: `${classStrength || '—'}`, color: 'text-primary', iconBg: 'bg-primary/10', borderColor: 'border-primary/20' },
 
   return (
     <div className="space-y-6 animate-fade-in">

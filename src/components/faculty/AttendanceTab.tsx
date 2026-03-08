@@ -92,7 +92,7 @@ export function AttendanceTab({ classId }: { classId: string }) {
 
       const { error } = await (supabase as any)
         .from('attendance')
-        .upsert(rows, { onConflict: 'student_id,class_id,date' });
+        .upsert(rows, { onConflict: 'student_id,class_id,date,subject_id' });
       if (error) throw error;
       toast.success('Attendance saved successfully');
     } catch (err: any) {

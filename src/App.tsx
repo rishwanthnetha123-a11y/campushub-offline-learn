@@ -26,6 +26,7 @@ import HodSubjectsPage from "./pages/HodSubjectsPage";
 import HodAssignFacultyPage from "./pages/HodAssignFacultyPage";
 import HodSchedulePage from "./pages/HodSchedulePage";
 import HodAnalyticsPage from "./pages/HodAnalyticsPage";
+import HodStudentsPage from "./pages/HodStudentsPage";
 import AcceptInvitePage from "./pages/AcceptInvitePage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentProfilePage from "./pages/StudentProfilePage";
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/hod/subjects" element={<HodSubjectsPage />} />
               <Route path="/hod/assign-faculty" element={<HodAssignFacultyPage />} />
               <Route path="/hod/schedule" element={<HodSchedulePage />} />
+              <Route path="/hod/students" element={<HodStudentsPage />} />
               <Route path="/hod/analytics" element={<HodAnalyticsPage />} />
               {/* Faculty routes */}
               <Route path="/faculty" element={<FacultyDashboardPage />} />

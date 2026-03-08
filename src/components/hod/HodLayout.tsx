@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, UserCheck, Calendar, BarChart3, LogOut, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, BookOpen, UserCheck, Calendar, BarChart3, LogOut, ArrowLeft, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
 import campusHubLogo from '@/assets/campus-hub-logo.png';
@@ -10,6 +10,7 @@ const navItems = [
   { path: '/hod', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/hod/subjects', label: 'Manage Subjects', icon: BookOpen },
   { path: '/hod/assign-faculty', label: 'Assign Faculty', icon: UserCheck },
+  { path: '/hod/students', label: 'Manage Students', icon: GraduationCap },
   { path: '/hod/schedule', label: 'Create Schedule', icon: Calendar },
   { path: '/hod/analytics', label: 'Analytics', icon: BarChart3 },
 ];

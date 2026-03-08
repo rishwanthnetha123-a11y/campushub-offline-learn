@@ -237,7 +237,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main content — with bottom padding for mobile nav */}
-      <main className="container mx-auto px-4 py-6 flex-1 pb-24 lg:pb-6">{children}</main>
+      <main className="container mx-auto px-4 py-6 flex-1 pb-24 lg:pb-6 animate-fade-in">{children}</main>
 
       {/* Footer — hidden on mobile (bottom nav replaces it) */}
       <footer className="hidden lg:block border-t bg-muted/30 mt-auto">

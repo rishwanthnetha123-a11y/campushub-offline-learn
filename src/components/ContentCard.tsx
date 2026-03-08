@@ -64,7 +64,7 @@ export const ContentCard = ({
   return (
     <Card 
       className={cn(
-        "group hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden",
+        "group hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden card-interactive",
         isDownloaded && "ring-2 ring-success/20",
         className
       )}

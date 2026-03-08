@@ -31,6 +31,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { path: '/ask', label: t.nav_ask_ai, icon: MessageSquare },
     { path: '/study-plan', label: 'Study Plan', icon: CalendarDays },
     { path: '/support', label: t.nav_support, icon: TicketIcon },
+    { path: '/my-academics', label: 'My Academics', icon: GraduationCap },
     { path: '/progress', label: t.nav_progress, icon: Trophy },
     { path: '/downloads', label: t.nav_downloads, icon: Download },
   ];

@@ -27,6 +27,7 @@ import HodAssignFacultyPage from "./pages/HodAssignFacultyPage";
 import HodSchedulePage from "./pages/HodSchedulePage";
 import HodAnalyticsPage from "./pages/HodAnalyticsPage";
 import AcceptInvitePage from "./pages/AcceptInvitePage";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
                     <Route path="/study-plan" element={<StudyPlannerPage />} />
                     <Route path="/share" element={<ShareResourcesPage />} />
                     <Route path="/support" element={<SupportPage />} />
+                    <Route path="/my-academics" element={<StudentDashboardPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AppLayout>

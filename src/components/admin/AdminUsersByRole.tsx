@@ -37,7 +37,43 @@ export function AdminUsersByRole({ role, title, description }: Props) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Get user IDs with this role
+      if (role === 'student') {
+        // Students: users with 'student' role OR users with NO role at all
+        const { data: allRoles } = await (supabase as any)
+          .from('user_roles')
+          .select('user_id, role');
+
+        const usersWithRoles = new Set((allRoles || []).map((r: any) => r.user_id));
+        const studentIds = (allRoles || [])
+          .filter((r: any) => r.role === 'student')
+          .map((r: any) => r.user_id);
+
+        // Get all profiles, then filter to those with student role or no role
+        const { data: allProfiles } = await (supabase as any)
+          .from('profiles')
+          .select('id, full_name, email, roll_no, phone, department_id, class_id, departments:department_id(name), classes:class_id(year, section)')
+          .order('full_name');
+
+        const profiles = (allProfiles || []).filter((p: any) =>
+          studentIds.includes(p.id) || !usersWithRoles.has(p.id)
+        );
+
+        const mapped = profiles.map((p: any) => ({
+          id: p.id,
+          full_name: p.full_name,
+          email: p.email,
+          roll_no: p.roll_no,
+          phone: p.phone,
+          department_name: p.departments?.name || null,
+          class_label: p.classes ? `Year ${p.classes.year} - ${p.classes.section}` : null,
+        }));
+
+        setUsers(mapped);
+        setLoading(false);
+        return;
+      }
+
+      // Other roles: get user IDs with this role
       const { data: roleData } = await (supabase as any)
         .from('user_roles')
         .select('user_id')

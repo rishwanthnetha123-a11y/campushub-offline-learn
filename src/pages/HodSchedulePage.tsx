@@ -17,7 +17,8 @@ export default function HodSchedulePage() {
   }, [authLoading, isHod, user, navigate]);
 
   if (authLoading || deptLoading) return <HodLayout><Skeleton className="h-64" /></HodLayout>;
-  if (!isHod || !departmentId) return null;
+  if (!isHod) return <HodLayout><div className="text-center py-12"><p className="text-muted-foreground">You do not have HOD access.</p></div></HodLayout>;
+  if (!departmentId) return <HodLayout><div className="text-center py-12"><p className="text-muted-foreground">No department assigned. Contact an administrator.</p></div></HodLayout>;
 
   return (
     <HodLayout>

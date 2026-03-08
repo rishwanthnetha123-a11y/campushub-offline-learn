@@ -11,6 +11,8 @@ interface StudentStat {
   id: string;
   full_name: string | null;
   email: string | null;
+  roll_no: string | null;
+  phone: string | null;
   attendance_pct: number;
   avg_marks: number;
 }
@@ -47,7 +49,7 @@ export function StudentsTab({ classId }: { classId: string }) {
         avgMarks = Math.round(totalPct / marksData.length);
       }
 
-      result.push({ id: s.id, full_name: s.full_name, email: s.email, attendance_pct: attPct, avg_marks: avgMarks });
+      result.push({ id: s.id, full_name: s.full_name, email: s.email, roll_no: (s as any).roll_no || null, phone: (s as any).phone || null, attendance_pct: attPct, avg_marks: avgMarks });
     }
 
     setStats(result);
@@ -73,6 +75,8 @@ export function StudentsTab({ classId }: { classId: string }) {
                 <TableRow>
                   <TableHead className="w-10">#</TableHead>
                   <TableHead>Name</TableHead>
+                  <TableHead>Roll No</TableHead>
+                  <TableHead>Phone</TableHead>
                   <TableHead>Attendance</TableHead>
                   <TableHead>Avg Marks</TableHead>
                   <TableHead className="w-20">Status</TableHead>
@@ -84,7 +88,12 @@ export function StudentsTab({ classId }: { classId: string }) {
                     <TableCell className="text-muted-foreground font-mono text-xs">{idx + 1}</TableCell>
                     <TableCell>
                       <p className="font-medium text-sm">{s.full_name || '—'}</p>
-                      <p className="text-xs text-muted-foreground">{s.email || '—'}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-mono text-sm">{s.roll_no || '—'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{s.phone || '—'}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

@@ -4,13 +4,13 @@
 
 /* CampusHub - Offline-First Education Design System
    Optimized for rural learners with low bandwidth and limited devices
-   Colors: Trustworthy blue, warm amber for actions, green for offline status
+   Enhanced with depth, glass effects, and modern visual hierarchy
 */
 
 @layer base {
   :root {
     /* Background colors - clean, high contrast for readability */
-    --background: 210 40% 98%;
+    --background: 220 20% 97%;
     --foreground: 222 47% 11%;
 
     /* Card surfaces */
@@ -29,7 +29,7 @@
     --secondary-foreground: 222 47% 11%;
 
     /* Muted - For subtle backgrounds */
-    --muted: 210 40% 96%;
+    --muted: 220 14% 96%;
     --muted-foreground: 215 16% 47%;
 
     /* Accent - Warm amber for downloads/actions */
@@ -37,7 +37,7 @@
     --accent-foreground: 0 0% 100%;
 
     /* Success - Green for offline ready/downloaded */
-    --success: 142 76% 36%;
+    --success: 152 69% 38%;
     --success-foreground: 0 0% 100%;
 
     /* Warning - For sync needed states */
@@ -49,11 +49,15 @@
     --destructive-foreground: 0 0% 100%;
 
     /* Border and Input */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 217 91% 45%;
 
     --radius: 0.75rem;
+
+    /* Glass effect tokens */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 100% / 0.2;
 
     /* Sidebar for navigation */
     --sidebar-background: 222 47% 11%;
@@ -66,20 +70,34 @@
     --sidebar-ring: 217 91% 60%;
 
     /* Custom CampusHub tokens */
-    --offline-ready: 142 76% 36%;
+    --offline-ready: 152 69% 38%;
     --download-pending: 38 92% 50%;
     --needs-internet: 215 16% 60%;
     --progress-bar: 217 91% 45%;
+
+    /* Gradient tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 45%), hsl(230 80% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(152 69% 38%), hsl(170 60% 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%), hsl(28 90% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 45% / 0.08), hsl(230 80% 55% / 0.04), transparent);
+    
+    /* Shadow tokens */
+    --shadow-sm: 0 1px 2px hsl(220 13% 91% / 0.5);
+    --shadow-md: 0 4px 12px hsl(220 20% 80% / 0.25);
+    --shadow-lg: 0 8px 30px hsl(220 20% 80% / 0.3);
+    --shadow-primary: 0 4px 14px hsl(217 91% 45% / 0.25);
+    --shadow-card: 0 1px 3px hsl(220 20% 80% / 0.12), 0 1px 2px hsl(220 20% 80% / 0.08);
+    --shadow-card-hover: 0 10px 25px hsl(220 20% 80% / 0.2), 0 4px 10px hsl(220 20% 80% / 0.1);
   }
 
   .dark {
-    --background: 222 47% 8%;
+    --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 11%;
+    --card: 222 40% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 11%;
+    --popover: 222 40% 10%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 55%;
@@ -88,13 +106,13 @@
     --secondary: 217 32% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 32% 17%;
+    --muted: 220 20% 14%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 38 92% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 76% 42%;
+    --success: 152 69% 42%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -103,11 +121,14 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
     --ring: 217 91% 55%;
 
-    --sidebar-background: 222 47% 6%;
+    --glass-bg: 222 47% 8% / 0.8;
+    --glass-border: 220 20% 25% / 0.3;
+
+    --sidebar-background: 222 47% 4%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -116,10 +137,22 @@
     --sidebar-border: 217 32% 20%;
     --sidebar-ring: 217 91% 60%;
 
-    --offline-ready: 142 76% 42%;
+    --offline-ready: 152 69% 42%;
     --download-pending: 38 92% 50%;
     --needs-internet: 215 20% 50%;
     --progress-bar: 217 91% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 55%), hsl(230 80% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(152 69% 42%), hsl(170 60% 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%), hsl(28 90% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 55% / 0.1), hsl(230 80% 60% / 0.05), transparent);
+
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 30px hsl(0 0% 0% / 0.5);
+    --shadow-primary: 0 4px 14px hsl(217 91% 55% / 0.3);
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.15);
+    --shadow-card-hover: 0 10px 25px hsl(0 0% 0% / 0.35), 0 4px 10px hsl(0 0% 0% / 0.2);
   }
 }
 
@@ -135,6 +168,57 @@
 }
 
 @layer components {
+  /* Enhanced card with subtle shadow and hover */
+  .card-elevated {
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  .card-elevated:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Glass header */
+  .glass-header {
+    backdrop-filter: blur(12px) saturate(1.5);
+    background: hsl(var(--glass-bg));
+    border-bottom: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  /* Stat card with gradient accent line */
+  .stat-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .stat-card:hover::before {
+    opacity: 1;
+  }
+
   /* Status badge variants */
   .badge-offline-ready {
     @apply bg-success text-success-foreground;
@@ -189,6 +273,37 @@
 
   .download-bounce {
     animation: download-bounce 1s ease-in-out infinite;
+  }
+
+  /* Bottom navigation for mobile */
+  .bottom-nav {
+    box-shadow: 0 -1px 10px hsl(220 20% 80% / 0.15);
+    backdrop-filter: blur(12px) saturate(1.5);
+    background: hsl(var(--glass-bg));
+  }
+
+  .dark .bottom-nav {
+    box-shadow: 0 -1px 10px hsl(0 0% 0% / 0.4);
+  }
+
+  /* Avatar ring effect */
+  .avatar-ring {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2), 0 0 0 6px hsl(var(--primary) / 0.08);
+  }
+
+  /* Animated gradient text */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .text-gradient {
+    background: var(--gradient-primary);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 4s ease-in-out infinite;
   }
 }
 

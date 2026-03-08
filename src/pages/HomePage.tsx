@@ -7,6 +7,7 @@ import { demoVideos, demoResources } from '@/data/demo-content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { NoticesBanner } from '@/components/NoticesBanner';
+import { PageTransition, StaggerContainer, StaggerItem, FadeIn } from '@/components/PageTransition';
 
 const HomePage = () => {
   const { getStorageStats, isOnline, downloads, progress } = useOfflineStorage();
@@ -34,7 +35,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <PageTransition className="space-y-10">
       {/* Hero Section */}
       <section className="relative text-center py-12 rounded-2xl gradient-hero overflow-hidden">
         <div className="relative z-10 max-w-3xl mx-auto px-4">
@@ -74,16 +75,18 @@ const HomePage = () => {
       <NoticesBanner />
 
       {/* Stats Grid */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map(({ value, label, color, borderColor }) => (
-          <Card key={label} className={cn("text-center card-elevated stat-card border", borderColor)}>
-            <CardContent className="pt-6 pb-4">
-              <div className={cn("text-3xl font-bold mb-1 tracking-tight", color)}>{value}</div>
-              <p className="text-xs text-muted-foreground font-medium">{label}</p>
-            </CardContent>
-          </Card>
+          <StaggerItem key={label}>
+            <Card className={cn("text-center card-elevated stat-card border card-interactive", borderColor)}>
+              <CardContent className="pt-6 pb-4">
+                <div className={cn("text-3xl font-bold mb-1 tracking-tight", color)}>{value}</div>
+                <p className="text-xs text-muted-foreground font-medium">{label}</p>
+              </CardContent>
+            </Card>
+          </StaggerItem>
         ))}
-      </section>
+      </StaggerContainer>
 
       {/* Connection Status Banner */}
       <Card className={cn(
@@ -115,29 +118,31 @@ const HomePage = () => {
       </Card>
 
       {/* Features Grid */}
-      <section>
+      <FadeIn delay={0.2}>
         <h2 className="text-heading text-foreground mb-5">{t.home_platform_features}</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <StaggerContainer className="grid md:grid-cols-2 gap-4">
           {features.map(({ icon: Icon, title, description, link, iconColor, iconBg }) => (
-            <Link key={title} to={link}>
-              <Card className="h-full card-elevated cursor-pointer group border">
-                <CardContent className="pt-6 pb-5">
-                  <div className="flex items-start gap-4">
-                    <div className={cn("p-3 rounded-xl", iconBg)}>
-                      <Icon className={cn("h-6 w-6", iconColor)} />
+            <StaggerItem key={title}>
+              <Link to={link}>
+                <Card className="h-full card-elevated cursor-pointer group border card-interactive">
+                  <CardContent className="pt-6 pb-5">
+                    <div className="flex items-start gap-4">
+                      <div className={cn("p-3 rounded-xl transition-smooth", iconBg)}>
+                        <Icon className={cn("h-6 w-6", iconColor)} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{description}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{description}</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all mt-1 shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
-      </section>
+        </StaggerContainer>
+      </FadeIn>
 
       {/* Why Offline Section */}
       <section className="bg-muted/50 rounded-2xl p-8 border">
@@ -157,7 +162,7 @@ const HomePage = () => {
           ))}
         </div>
       </section>
-    </div>
+    </PageTransition>
   );
 };
 

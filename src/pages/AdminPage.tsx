@@ -18,6 +18,7 @@ import { AdminTickets } from '@/components/admin/AdminTickets';
 import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
 import { AdminDepartments } from '@/components/admin/AdminDepartments';
 import { AdminNotices } from '@/components/admin/AdminNotices';
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/PageTransition';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -100,25 +101,27 @@ const AdminPage = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <PageTransition className="container mx-auto px-4 py-6 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {statCards.map(({ icon: Icon, label, value }) => (
-            <Card key={label}>
-              <CardContent className="pt-5 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-md bg-primary/10"><Icon className="h-4 w-4 text-primary" /></div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="text-lg font-bold text-foreground">
-                      {loadingStats ? <Loader2 className="h-4 w-4 animate-spin" /> : value}
-                    </p>
+            <StaggerItem key={label}>
+              <Card className="card-interactive">
+                <CardContent className="pt-5 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-md bg-primary/10"><Icon className="h-4 w-4 text-primary" /></div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="text-lg font-bold text-foreground">
+                        {loadingStats ? <Loader2 className="h-4 w-4 animate-spin" /> : value}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {/* Tabs */}
         <Tabs defaultValue="departments" className="space-y-4">
@@ -158,19 +161,19 @@ const AdminPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="departments"><AdminDepartments /></TabsContent>
-          <TabsContent value="role-invites"><AdminRoleInvites /></TabsContent>
-          <TabsContent value="students"><AdminUsersByRole role="student" title="Students" description="students enrolled" /></TabsContent>
-          <TabsContent value="faculty"><AdminUsersByRole role="faculty" title="Faculty Members" description="faculty members" /></TabsContent>
-          <TabsContent value="hods"><AdminUsersByRole role="hod" title="Heads of Department" description="HODs" /></TabsContent>
-          <TabsContent value="admins"><AdminUsersByRole role="admin" title="Administrators" description="admins" /></TabsContent>
-          <TabsContent value="videos"><AdminVideos /></TabsContent>
-          <TabsContent value="resources"><AdminResources /></TabsContent>
-          <TabsContent value="tickets"><AdminTickets /></TabsContent>
-          <TabsContent value="analytics"><AdminAnalytics /></TabsContent>
-          <TabsContent value="notices"><AdminNotices /></TabsContent>
+          <TabsContent value="departments" className="animate-tab-fade"><AdminDepartments /></TabsContent>
+          <TabsContent value="role-invites" className="animate-tab-fade"><AdminRoleInvites /></TabsContent>
+          <TabsContent value="students" className="animate-tab-fade"><AdminUsersByRole role="student" title="Students" description="students enrolled" /></TabsContent>
+          <TabsContent value="faculty" className="animate-tab-fade"><AdminUsersByRole role="faculty" title="Faculty Members" description="faculty members" /></TabsContent>
+          <TabsContent value="hods" className="animate-tab-fade"><AdminUsersByRole role="hod" title="Heads of Department" description="HODs" /></TabsContent>
+          <TabsContent value="admins" className="animate-tab-fade"><AdminUsersByRole role="admin" title="Administrators" description="admins" /></TabsContent>
+          <TabsContent value="videos" className="animate-tab-fade"><AdminVideos /></TabsContent>
+          <TabsContent value="resources" className="animate-tab-fade"><AdminResources /></TabsContent>
+          <TabsContent value="tickets" className="animate-tab-fade"><AdminTickets /></TabsContent>
+          <TabsContent value="analytics" className="animate-tab-fade"><AdminAnalytics /></TabsContent>
+          <TabsContent value="notices" className="animate-tab-fade"><AdminNotices /></TabsContent>
         </Tabs>
-      </main>
+      </PageTransition>
     </div>
   );
 };

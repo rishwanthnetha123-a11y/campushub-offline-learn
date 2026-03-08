@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2, Phone } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2, Phone, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ const AuthPage = () => {
     password: '',
     fullName: '',
     phone: '',
+    rollNo: '',
   });
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
@@ -53,21 +54,26 @@ const AuthPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.rollNo.trim()) {
+      toast({ title: 'Roll number required', description: 'Please enter your roll number.', variant: 'destructive' });
+      return;
+    }
     setIsLoading(true);
 
-    const { error } = await signUp(formData.email, formData.password, formData.fullName);
+    const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
     
     if (error) {
-      toast({
-        title: 'Sign up failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({
-        title: 'Account created!',
-        description: 'Please check your email to verify your account.',
-      });
+      // Save roll_no and phone to profile after signup
+      const userId = data?.user?.id;
+      if (userId) {
+        await (supabase as any).from('profiles').update({
+          roll_no: formData.rollNo.trim(),
+          phone: formData.phone.trim() || null,
+        }).eq('id', userId);
+      }
+      toast({ title: 'Account created!', description: 'Please check your email to verify your account.' });
     }
     
     setIsLoading(false);
@@ -268,6 +274,28 @@ const AuthPage = () => {
                       placeholder="Full name"
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Roll Number (e.g., 21CS101)"
+                      value={formData.rollNo}
+                      onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="tel"
+                      placeholder="Phone number (optional)"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="pl-10"
                     />
                   </div>

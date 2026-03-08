@@ -14,6 +14,8 @@ interface StudentProfile {
   id: string;
   full_name: string | null;
   email: string | null;
+  roll_no: string | null;
+  phone: string | null;
   class_id: string | null;
 }
 
@@ -58,8 +60,8 @@ export function ManageStudents({ departmentId, departmentName }: Props) {
     setLoading(true);
     const [{ data: cls }, { data: deptStudents }, { data: noDepStudents }] = await Promise.all([
       (supabase as any).from('classes').select('id, year, section').eq('department_id', departmentId).order('year'),
-      (supabase as any).from('profiles').select('id, full_name, email, class_id').eq('department_id', departmentId).order('full_name'),
-      (supabase as any).from('profiles').select('id, full_name, email, class_id').is('department_id', null).order('full_name'),
+      (supabase as any).from('profiles').select('id, full_name, email, roll_no, phone, class_id').eq('department_id', departmentId).order('full_name'),
+      (supabase as any).from('profiles').select('id, full_name, email, roll_no, phone, class_id').is('department_id', null).order('full_name'),
     ]);
     setClasses(cls || []);
     setStudents(deptStudents || []);
@@ -341,7 +343,7 @@ export function ManageStudents({ departmentId, departmentName }: Props) {
                       <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border">
                         <div>
                           <p className="text-sm font-medium text-foreground">{s.full_name || 'Unnamed'}</p>
-                          <p className="text-xs text-muted-foreground">{s.email}</p>
+                          <p className="text-xs text-muted-foreground">Roll: {s.roll_no || '—'} • Phone: {s.phone || '—'}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Select onValueChange={(v) => assignToClass(s.id, v)}>
@@ -381,7 +383,7 @@ export function ManageStudents({ departmentId, departmentName }: Props) {
                           <div key={s.id} className="flex items-center justify-between p-2.5 rounded-lg border">
                             <div>
                               <p className="text-sm font-medium text-foreground">{s.full_name || 'Unnamed'}</p>
-                              <p className="text-xs text-muted-foreground">{s.email}</p>
+                              <p className="text-xs text-muted-foreground">Roll: {s.roll_no || '—'} • Phone: {s.phone || '—'}</p>
                             </div>
                             <div className="flex items-center gap-2">
                               <Select defaultValue={s.class_id || undefined} onValueChange={(v) => assignToClass(s.id, v)}>

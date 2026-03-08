@@ -5,7 +5,8 @@ import {
   StickyNote,
   Clock,
   HardDrive,
-  User
+  User,
+  Bookmark
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Video as VideoType, Resource } from '@/types/content';
@@ -20,6 +21,8 @@ interface ContentCardProps {
   isDownloaded: boolean;
   learningProgress?: number;
   quizCompleted?: boolean;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: () => void;
   onDownload: () => void;
   onRemove: () => void;
   onClick: () => void;
@@ -45,6 +48,8 @@ export const ContentCard = ({
   isDownloaded,
   learningProgress = 0,
   quizCompleted = false,
+  isBookmarked = false,
+  onBookmarkToggle,
   onDownload,
   onRemove,
   onClick,
@@ -97,8 +102,21 @@ export const ContentCard = ({
           </div>
         )}
         
-        {/* Status badge */}
-        <div className="absolute top-2 right-2 z-10">
+        {/* Status badge & bookmark */}
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+          {onBookmarkToggle && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onBookmarkToggle(); }}
+              className={cn(
+                "p-1.5 rounded-full transition-colors",
+                isBookmarked
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-black/40 text-white hover:bg-black/60"
+              )}
+            >
+              <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+            </button>
+          )}
           <OfflineStatusBadge 
             status={isDownloaded ? 'offline-ready' : 'not-downloaded'} 
           />

@@ -166,6 +166,29 @@ export function AdminStudents() {
     }
   };
 
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDeleteUser = async (userId: string) => {
+    setDeleting(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setStudents(prev => prev.filter(s => s.id !== userId));
+      if (expandedStudent === userId) {
+        setExpandedStudent(null);
+        setStudentDetails(null);
+      }
+    } catch (err: any) {
+      console.error('Delete failed:', err);
+      alert(err.message || 'Failed to delete user');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const filteredStudents = students.filter(student =>
     student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchQuery.toLowerCase())

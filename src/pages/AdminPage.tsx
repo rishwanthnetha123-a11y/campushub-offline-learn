@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, Users, Video, FileText, BarChart3, MessageSquare, UserPlus, TicketIcon,
-  LogOut, Loader2, Trophy, Building2, GraduationCap
+  LogOut, Loader2, Trophy, Building2, GraduationCap, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import { AdminResources } from '@/components/admin/AdminResources';
 import { AdminTickets } from '@/components/admin/AdminTickets';
 import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
 import { AdminDepartments } from '@/components/admin/AdminDepartments';
+import { AdminNotices } from '@/components/admin/AdminNotices';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -143,6 +144,9 @@ const AdminPage = () => {
             <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
               <BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
+            <TabsTrigger value="notices" className="gap-1.5 text-xs sm:text-sm">
+              <Megaphone className="h-3.5 w-3.5" /><span className="hidden sm:inline">Notices</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="departments"><AdminDepartments /></TabsContent>
@@ -152,6 +156,7 @@ const AdminPage = () => {
           <TabsContent value="resources"><AdminResources /></TabsContent>
           <TabsContent value="tickets"><AdminTickets /></TabsContent>
           <TabsContent value="analytics"><AdminAnalytics /></TabsContent>
+          <TabsContent value="notices"><AdminNotices /></TabsContent>
         </Tabs>
       </main>
     </div>

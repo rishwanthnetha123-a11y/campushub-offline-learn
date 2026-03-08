@@ -353,6 +353,51 @@ export type Database = {
           },
         ]
       }
+      notices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          priority: string
+          starts_at: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          priority?: string
+          starts_at?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          priority?: string
+          starts_at?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       phone_otps: {
         Row: {
           created_at: string

@@ -33,6 +33,7 @@ import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentProfilePage from "./pages/StudentProfilePage";
 import HodVideosPage from "./pages/HodVideosPage";
 import FacultyVideosPage from "./pages/FacultyVideosPage";
+import NoticesPage from "./pages/NoticesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +79,7 @@ const App = () => (
                     <Route path="/support" element={<SupportPage />} />
                     <Route path="/my-academics" element={<StudentDashboardPage />} />
                     <Route path="/profile" element={<StudentProfilePage />} />
+                    <Route path="/notices" element={<NoticesPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AppLayout>

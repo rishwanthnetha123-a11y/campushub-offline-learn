@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, Users, Video, FileText, BarChart3, MessageSquare, UserPlus, TicketIcon,
-  LogOut, Loader2, Trophy, Building2, GraduationCap, Megaphone
+  LogOut, Loader2, Trophy, Building2, GraduationCap, Megaphone, UserCog, BookUser
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { AdminStudents } from '@/components/admin/AdminStudents';
+import { AdminUsersByRole } from '@/components/admin/AdminUsersByRole';
 import { AdminVideos } from '@/components/admin/AdminVideos';
 import { AdminInvites } from '@/components/admin/AdminInvites';
 import { AdminRoleInvites } from '@/components/admin/AdminRoleInvites';

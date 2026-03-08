@@ -15,7 +15,12 @@ import {
   Plus,
   Trash2,
   Clock,
-  Code2
+  Code2,
+  WifiOff,
+  Wifi,
+  Download,
+  CloudOff,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,13 +33,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useOfflineDoubtSolver } from '@/hooks/use-offline-doubt-solver';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  isOffline?: boolean;
+  isQueued?: boolean;
 }
 
 const LANGUAGES = [
@@ -64,8 +74,6 @@ const UI_TRANSLATIONS: Record<string, { title: string; subtitle: string; placeho
   ml: { title: 'AI സംശയ പരിഹാരം', subtitle: 'നിങ്ങളുടെ ഇഷ്ട ഭാഷയിൽ ചോദ്യം ചോദിക്കൂ', placeholder: 'നിങ്ങളുടെ ചോദ്യം ഇവിടെ ടൈപ്പ് ചെയ്യുക...', askTitle: 'നിങ്ങളുടെ സംശയങ്ങൾ ചോദിക്കൂ', askDesc: 'നിങ്ങളുടെ പഠനത്തെക്കുറിച്ചുള്ള ഏതെങ്കിലും ചോദ്യം ടൈപ്പ് ചെയ്യുക.', thinking: 'ചിന്തിക്കുന്നു...', anySubject: 'ഏത് വിഷയവും' },
   pa: { title: 'AI ਸ਼ੰਕਾ ਹੱਲਕਰਤਾ', subtitle: 'ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਵਿੱਚ ਸਵਾਲ ਪੁੱਛੋ', placeholder: 'ਆਪਣਾ ਸਵਾਲ ਇੱਥੇ ਟਾਈਪ ਕਰੋ...', askTitle: 'ਆਪਣੇ ਸ਼ੰਕੇ ਪੁੱਛੋ', askDesc: 'ਆਪਣੀ ਪੜ੍ਹਾਈ ਬਾਰੇ ਕੋਈ ਵੀ ਸਵਾਲ ਟਾਈਪ ਕਰੋ।', thinking: 'ਸੋਚ ਰਿਹਾ ਹੈ...', anySubject: 'ਕੋਈ ਵੀ ਵਿਸ਼ਾ' },
 };
-
-import { supabase } from '@/integrations/supabase/client';
 
 const CHAT_HISTORY_KEY = 'campushub_doubt_history';
 const MAX_SAVED_CONVERSATIONS = 20;
@@ -107,10 +115,68 @@ const DoubtSolverPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [mode, setMode] = useState<'general' | 'sml_tutor'>('general');
+  const [isDownloadingFAQs, setIsDownloadingFAQs] = useState(false);
+  const [faqCount, setFaqCount] = useState(0);
+
+  const {
+    isOnline,
+    queueCount,
+    isSyncing,
+    cacheResponse,
+    searchCache,
+    queueQuestion,
+    getQueuedQuestions,
+    removeFromQueue,
+    syncQueue,
+    storeFAQs,
+    getFAQCount,
+  } = useOfflineDoubtSolver();
 
   const t = UI_TRANSLATIONS[language] || UI_TRANSLATIONS.en;
 
-  // Save conversation whenever messages change (after streaming completes)
+  // Load FAQ count on mount
+  useEffect(() => {
+    getFAQCount().then(setFaqCount);
+  }, [getFAQCount]);
+
+  // Auto-sync queued questions when coming back online
+  useEffect(() => {
+    if (isOnline && queueCount > 0) {
+      toast({
+        title: 'Back online!',
+        description: `Syncing ${queueCount} queued question(s)...`,
+      });
+      syncQueue(async (q) => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-doubt`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({
+                messages: [{ role: 'user', content: q.question }],
+                language: q.language,
+                subject: q.subject === 'any' ? undefined : q.subject,
+                mode: q.mode,
+              }),
+            }
+          );
+          if (!response.ok) return null;
+          const data = await response.json();
+          return data.choices?.[0]?.message?.content || null;
+        } catch {
+          return null;
+        }
+      });
+    }
+  }, [isOnline]);
+
+  // Save conversation whenever messages change
   useEffect(() => {
     if (messages.length < 2 || isStreaming) return;
     const convId = activeConversationId || crypto.randomUUID();
@@ -169,6 +235,63 @@ const DoubtSolverPage = () => {
     }
   }, [messages]);
 
+  // Download FAQs for offline use
+  const downloadFAQs = useCallback(async () => {
+    if (!isOnline) {
+      toast({ title: 'No internet', description: 'You need internet to download FAQs.', variant: 'destructive' });
+      return;
+    }
+    setIsDownloadingFAQs(true);
+    let totalDownloaded = 0;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      for (const subj of SUBJECTS) {
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-faq`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              },
+              body: JSON.stringify({ subject: subj, language, count: 5 }),
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.faqs?.length) {
+              await storeFAQs(data.faqs.map((f: any) => ({
+                question: f.question,
+                answer: f.answer,
+                subject: subj,
+                language,
+                mode: subj === 'Standard ML' ? 'sml_tutor' : 'general',
+                timestamp: Date.now(),
+              })));
+              totalDownloaded += data.faqs.length;
+            }
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch FAQs for ${subj}:`, e);
+        }
+      }
+      const newCount = await getFAQCount();
+      setFaqCount(newCount);
+      toast({
+        title: 'FAQs downloaded!',
+        description: `${totalDownloaded} answers saved for offline use across ${SUBJECTS.length} subjects.`,
+      });
+    } catch (e) {
+      console.error('FAQ download error:', e);
+      toast({ title: 'Download failed', description: 'Could not download FAQs.', variant: 'destructive' });
+    } finally {
+      setIsDownloadingFAQs(false);
+    }
+  }, [isOnline, language, toast, storeFAQs, getFAQCount]);
+
   const streamChat = useCallback(async () => {
     if (!input.trim() || isStreaming) return;
 
@@ -176,6 +299,40 @@ const DoubtSolverPage = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsStreaming(true);
+
+    // If offline, try cache first, then queue
+    if (!isOnline) {
+      const cached = await searchCache(userMessage.content, subject, language, mode);
+      if (cached) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: cached.answer + '\n\n---\n*📦 This answer is from your offline cache.*',
+          isOffline: true,
+        }]);
+        setIsStreaming(false);
+        return;
+      }
+
+      // No cached answer — queue the question
+      await queueQuestion(
+        userMessage.content,
+        subject,
+        language,
+        mode,
+        messages.map(m => ({ role: m.role, content: m.content })),
+      );
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: '📋 **Question queued!** You\'re offline and no cached answer was found for this question. Your question has been saved and will be automatically sent to the AI tutor when you\'re back online.',
+        isQueued: true,
+      }]);
+      setIsStreaming(false);
+      toast({
+        title: 'Question queued',
+        description: 'Your question will be answered when you\'re back online.',
+      });
+      return;
+    }
 
     let assistantContent = '';
 
@@ -200,21 +357,13 @@ const DoubtSolverPage = () => {
       );
 
       if (response.status === 429) {
-        toast({
-          title: 'Too many requests',
-          description: 'Please wait a moment before asking another question.',
-          variant: 'destructive',
-        });
+        toast({ title: 'Too many requests', description: 'Please wait a moment before asking another question.', variant: 'destructive' });
         setIsStreaming(false);
         return;
       }
 
       if (response.status === 402) {
-        toast({
-          title: 'Service unavailable',
-          description: 'AI credits exhausted. Please contact administrator.',
-          variant: 'destructive',
-        });
+        toast({ title: 'Service unavailable', description: 'AI credits exhausted. Please contact administrator.', variant: 'destructive' });
         setIsStreaming(false);
         return;
       }
@@ -227,7 +376,6 @@ const DoubtSolverPage = () => {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      // Add empty assistant message
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       while (true) {
@@ -260,23 +408,23 @@ const DoubtSolverPage = () => {
               });
             }
           } catch {
-            // Incomplete JSON, put it back
             buffer = line + '\n' + buffer;
             break;
           }
         }
       }
+
+      // Cache the response for offline use
+      if (assistantContent) {
+        await cacheResponse(userMessage.content, assistantContent, subject, language, mode);
+      }
     } catch (error) {
       console.error('Chat error:', error);
-      toast({
-        title: 'Connection error',
-        description: 'Could not connect to AI tutor. Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Connection error', description: 'Could not connect to AI tutor. Please try again.', variant: 'destructive' });
     } finally {
       setIsStreaming(false);
     }
-  }, [input, isStreaming, messages, language, subject, mode, toast]);
+  }, [input, isStreaming, messages, language, subject, mode, toast, isOnline, searchCache, queueQuestion, cacheResponse]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -312,6 +460,23 @@ const DoubtSolverPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Online/Offline indicator */}
+          <Badge variant={isOnline ? 'default' : 'destructive'} className="gap-1.5">
+            {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+            {isOnline ? 'Online' : 'Offline'}
+          </Badge>
+          {queueCount > 0 && (
+            <Badge variant="secondary" className="gap-1">
+              <CloudOff className="h-3 w-3" />
+              {queueCount} queued
+            </Badge>
+          )}
+          {isSyncing && (
+            <Badge variant="outline" className="gap-1">
+              <RefreshCw className="h-3 w-3 animate-spin" />
+              Syncing
+            </Badge>
+          )}
           <Button variant="outline" size="sm" onClick={startNewChat} className="gap-2">
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Chat</span>
@@ -322,6 +487,33 @@ const DoubtSolverPage = () => {
           </Button>
         </div>
       </div>
+
+      {/* Offline FAQ Download Banner */}
+      {isOnline && (
+        <div className="flex items-center justify-between bg-muted/50 rounded-lg px-4 py-2 border">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Download className="h-4 w-4" />
+            <span>
+              {faqCount > 0
+                ? `${faqCount} FAQ answers cached for offline use`
+                : 'Download FAQs for offline access'}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={downloadFAQs}
+            disabled={isDownloadingFAQs}
+            className="gap-1.5"
+          >
+            {isDownloadingFAQs ? (
+              <><Loader2 className="h-3 w-3 animate-spin" /> Downloading...</>
+            ) : (
+              <><Download className="h-3 w-3" /> {faqCount > 0 ? 'Update FAQs' : 'Download FAQs'}</>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Chat History Panel */}
       {showHistory && (
@@ -432,12 +624,18 @@ const DoubtSolverPage = () => {
             <div className="h-full flex items-center justify-center text-center">
               <div className="space-y-4">
                 <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
-                  <MessageSquare className="h-10 w-10 text-primary" />
+                  {isOnline ? (
+                    <MessageSquare className="h-10 w-10 text-primary" />
+                  ) : (
+                    <WifiOff className="h-10 w-10 text-muted-foreground" />
+                  )}
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">{t.askTitle}</h3>
                   <p className="text-muted-foreground max-w-md">
-                    {t.askDesc}
+                    {isOnline
+                      ? t.askDesc
+                      : 'You\'re offline. Questions will be matched against cached answers or queued for when you\'re back online.'}
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -468,8 +666,17 @@ const DoubtSolverPage = () => {
                   )}
                 >
                   {message.role === 'assistant' && (
-                    <div className="p-2 rounded-full bg-primary/10 h-fit">
-                      <Bot className="h-4 w-4 text-primary" />
+                    <div className={cn(
+                      "p-2 rounded-full h-fit",
+                      message.isOffline ? "bg-amber-500/10" : message.isQueued ? "bg-orange-500/10" : "bg-primary/10"
+                    )}>
+                      {message.isOffline ? (
+                        <WifiOff className="h-4 w-4 text-amber-600" />
+                      ) : message.isQueued ? (
+                        <CloudOff className="h-4 w-4 text-orange-600" />
+                      ) : (
+                        <Bot className="h-4 w-4 text-primary" />
+                      )}
                     </div>
                   )}
                   <div
@@ -477,7 +684,11 @@ const DoubtSolverPage = () => {
                       "max-w-[80%] rounded-2xl px-4 py-3",
                       message.role === 'user'
                         ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
+                        : message.isOffline
+                          ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800'
+                          : message.isQueued
+                            ? 'bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800'
+                            : 'bg-muted'
                     )}
                   >
                     {message.role === 'assistant' ? (
@@ -511,6 +722,12 @@ const DoubtSolverPage = () => {
 
         {/* Input Area */}
         <div className="p-4 border-t">
+          {!isOnline && (
+            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mb-2">
+              <WifiOff className="h-3 w-3" />
+              Offline mode — answers from cache or questions will be queued
+            </div>
+          )}
           <div className="flex gap-2">
             <Textarea
               ref={textareaRef}

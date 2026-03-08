@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, Users, Video, FileText, BarChart3, MessageSquare, UserPlus, TicketIcon,
-  LogOut, Loader2, Trophy, Building2, GraduationCap, Megaphone
+  LogOut, Loader2, Trophy, Building2, GraduationCap, Megaphone, UserCog, BookUser
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { AdminStudents } from '@/components/admin/AdminStudents';
+import { AdminUsersByRole } from '@/components/admin/AdminUsersByRole';
 import { AdminVideos } from '@/components/admin/AdminVideos';
 import { AdminInvites } from '@/components/admin/AdminInvites';
 import { AdminRoleInvites } from '@/components/admin/AdminRoleInvites';
@@ -130,7 +130,16 @@ const AdminPage = () => {
               <UserPlus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Role Invites</span><span className="sm:hidden">Invites</span>
             </TabsTrigger>
             <TabsTrigger value="students" className="gap-1.5 text-xs sm:text-sm">
-              <Users className="h-3.5 w-3.5" /><span className="hidden sm:inline">Students</span><span className="sm:hidden">Users</span>
+              <GraduationCap className="h-3.5 w-3.5" /><span className="hidden sm:inline">Students</span>
+            </TabsTrigger>
+            <TabsTrigger value="faculty" className="gap-1.5 text-xs sm:text-sm">
+              <BookUser className="h-3.5 w-3.5" /><span className="hidden sm:inline">Faculty</span>
+            </TabsTrigger>
+            <TabsTrigger value="hods" className="gap-1.5 text-xs sm:text-sm">
+              <UserCog className="h-3.5 w-3.5" /><span className="hidden sm:inline">HODs</span>
+            </TabsTrigger>
+            <TabsTrigger value="admins" className="gap-1.5 text-xs sm:text-sm">
+              <Shield className="h-3.5 w-3.5" /><span className="hidden sm:inline">Admins</span>
             </TabsTrigger>
             <TabsTrigger value="videos" className="gap-1.5 text-xs sm:text-sm">
               <Video className="h-3.5 w-3.5" /><span className="hidden sm:inline">Videos</span>
@@ -151,7 +160,10 @@ const AdminPage = () => {
 
           <TabsContent value="departments"><AdminDepartments /></TabsContent>
           <TabsContent value="role-invites"><AdminRoleInvites /></TabsContent>
-          <TabsContent value="students"><AdminStudents /></TabsContent>
+          <TabsContent value="students"><AdminUsersByRole role="student" title="Students" description="students enrolled" /></TabsContent>
+          <TabsContent value="faculty"><AdminUsersByRole role="faculty" title="Faculty Members" description="faculty members" /></TabsContent>
+          <TabsContent value="hods"><AdminUsersByRole role="hod" title="Heads of Department" description="HODs" /></TabsContent>
+          <TabsContent value="admins"><AdminUsersByRole role="admin" title="Administrators" description="admins" /></TabsContent>
           <TabsContent value="videos"><AdminVideos /></TabsContent>
           <TabsContent value="resources"><AdminResources /></TabsContent>
           <TabsContent value="tickets"><AdminTickets /></TabsContent>

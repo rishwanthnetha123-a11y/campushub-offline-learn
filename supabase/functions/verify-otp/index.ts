@@ -50,41 +50,35 @@ serve(async (req) => {
     // OTP is valid - delete it
     await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
 
-    // Check if user exists with this phone, or create one
+    // Check if user exists with this phone
+    const dummyEmail = `${formattedPhone.replace("+", "")}@phone.campushub.local`;
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(
-      (u) => u.phone === formattedPhone
+      (u) => u.phone === formattedPhone || u.email === dummyEmail
     );
 
     if (existingUser) {
-      // Generate a session for existing user
-      const { data: sessionData, error: signInError } =
-        await supabaseAdmin.auth.admin.generateLink({
-          type: "magiclink",
-          email: existingUser.email || `${formattedPhone.replace("+", "")}@phone.campushub.local`,
-        });
+      // Update the user's password to a new temp password so we can sign them in
+      const tempPassword = crypto.randomUUID();
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        existingUser.id,
+        { password: tempPassword }
+      );
 
-      if (signInError) throw signInError;
-
-      // Sign in the user directly
-      const { data: signInData, error: tokenError } =
-        await supabaseAdmin.auth.admin.generateLink({
-          type: "magiclink",
-          email: existingUser.email || `${formattedPhone.replace("+", "")}@phone.campushub.local`,
-        });
+      if (updateError) throw updateError;
 
       return new Response(
         JSON.stringify({
           success: true,
           user_id: existingUser.id,
-          email: existingUser.email,
+          email: existingUser.email || dummyEmail,
+          temp_password: tempPassword,
           is_new: false,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
       // Create new user with phone
-      const dummyEmail = `${formattedPhone.replace("+", "")}@phone.campushub.local`;
       const tempPassword = crypto.randomUUID();
 
       const { data: newUser, error: createError } =

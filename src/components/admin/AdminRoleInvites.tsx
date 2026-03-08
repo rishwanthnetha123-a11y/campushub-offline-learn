@@ -253,7 +253,7 @@ export function AdminRoleInvites() {
                 </div>
                 <div className="flex items-center gap-2">
                   {invite.accepted ? (
-                    <Badge className="bg-green-500">Accepted</Badge>
+                    <Badge className="bg-emerald-500 text-emerald-50">Accepted</Badge>
                   ) : isExpired(invite.expires_at) ? (
                     <Badge variant="destructive">Expired</Badge>
                   ) : (

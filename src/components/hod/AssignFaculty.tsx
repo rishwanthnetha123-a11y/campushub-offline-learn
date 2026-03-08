@@ -38,6 +38,10 @@ export function AssignFaculty({ departmentId }: { departmentId: string }) {
           throw error;
         }
       } else {
+        // Also ensure faculty_classes entry exists
+        await (supabase as any)
+          .from('faculty_classes')
+          .upsert({ faculty_id: facultyId, class_id: classId }, { onConflict: 'faculty_id,class_id', ignoreDuplicates: true });
         toast.success('Faculty assigned');
         setFacultyId(''); setClassId(''); setSubjectId('');
         refetch();
@@ -49,10 +53,28 @@ export function AssignFaculty({ departmentId }: { departmentId: string }) {
     }
   };
 
-  const handleRemove = async (id: string) => {
+  const handleRemove = async (id: string, facultyId: string, classId: string) => {
     const { error } = await (supabase as any).from('faculty_subjects').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else { toast.success('Assignment removed'); refetch(); }
+    if (error) { toast.error(error.message); return; }
+    
+    // Check if faculty still has other subjects in this class
+    const { count } = await (supabase as any)
+      .from('faculty_subjects')
+      .select('id', { count: 'exact', head: true })
+      .eq('faculty_id', facultyId)
+      .eq('class_id', classId);
+    
+    if ((count ?? 0) === 0) {
+      // Remove faculty_classes entry since no more subjects in this class
+      await (supabase as any)
+        .from('faculty_classes')
+        .delete()
+        .eq('faculty_id', facultyId)
+        .eq('class_id', classId);
+    }
+    
+    toast.success('Assignment removed');
+    refetch();
   };
 
   if (isLoading) {
@@ -143,7 +165,7 @@ export function AssignFaculty({ departmentId }: { departmentId: string }) {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleRemove(a.id)}>Remove</AlertDialogAction>
+                              <AlertDialogAction onClick={() => handleRemove(a.id, a.faculty_id, a.class_id)}>Remove</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>

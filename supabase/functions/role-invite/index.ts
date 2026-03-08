@@ -62,14 +62,24 @@ serve(async (req) => {
         .from("user_roles")
         .upsert({ user_id: userId, role: invite.role }, { onConflict: "user_id,role" });
 
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error("Role assignment error:", roleError);
+        throw roleError;
+      }
 
       // Update profile with department if provided
       if (invite.department_id) {
-        await supabaseAdmin
+        const { error: profileError } = await supabaseAdmin
           .from("profiles")
           .update({ department_id: invite.department_id })
           .eq("id", userId);
+        
+        if (profileError) {
+          console.error("Profile department update error:", profileError);
+          // Don't throw - role was already assigned, but log the issue
+        } else {
+          console.log(`Updated profile ${userId} with department ${invite.department_id}`);
+        }
       }
 
       // Mark invite as accepted

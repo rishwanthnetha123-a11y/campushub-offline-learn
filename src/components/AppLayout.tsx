@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
-  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap, Building2, UserCircle
+  Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap, Building2, UserCircle,
+  Sun, Moon
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { ConnectionStatus } from './ConnectionStatus';
 import { Button } from './ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -20,6 +22,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { user, isAdmin, isHod, isFaculty, signOut, isLoading } = useAuthContext();
   const { language, setLanguage, t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -98,6 +101,15 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                 ))}
               </SelectContent>
             </Select>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
 
             <ConnectionStatus />
 

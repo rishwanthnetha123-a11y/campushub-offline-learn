@@ -170,7 +170,7 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* Summary Cards — enhanced */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {statCards.map(({ icon: Icon, label, value, color, iconBg, borderColor }) => (
           <Card key={label} className={cn("card-elevated stat-card border", borderColor)}>
             <CardContent className="pt-5 pb-4 flex items-center gap-4">

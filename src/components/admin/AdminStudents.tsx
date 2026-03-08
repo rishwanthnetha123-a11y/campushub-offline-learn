@@ -324,6 +324,29 @@ export function AdminStudents() {
                       </div>
                     </Button>
                   </CollapsibleTrigger>
+                  <div className="absolute right-2 top-3">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                          {deleting === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete User Permanently?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete <strong>{student.full_name || student.email}</strong> and all their data. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteUser(student.id)}>Delete Permanently</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                    </Button>
+                  </CollapsibleTrigger>
                   
                   <CollapsibleContent>
                     <div className="px-4 pb-4 space-y-4 border-t">

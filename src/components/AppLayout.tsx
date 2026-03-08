@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ConnectionStatus } from './ConnectionStatus';
 import { Button } from './ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -67,24 +68,35 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-0.5">
-            {navItems.map(({ path, label, icon: Icon }) => (
-              <Link
-                key={path}
-                to={path}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                  location.pathname === path
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop nav with morph pill */}
+          <LayoutGroup>
+            <nav className="hidden lg:flex items-center gap-0.5">
+              {navItems.map(({ path, label, icon: Icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={cn(
+                    "relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200",
+                    location.pathname === path
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {location.pathname === path && (
+                    <motion.div
+                      layoutId="nav-pill"
+                      className="absolute inset-0 bg-primary rounded-lg shadow-sm"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </LayoutGroup>
 
           <div className="flex items-center gap-2">
             {/* Language Selector */}
@@ -237,7 +249,18 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main content — with bottom padding for mobile nav */}
-      <main className="container mx-auto px-4 py-6 flex-1 pb-24 lg:pb-6 animate-fade-in">{children}</main>
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="container mx-auto px-4 py-6 flex-1 pb-24 lg:pb-6"
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
 
       {/* Footer — hidden on mobile (bottom nav replaces it) */}
       <footer className="hidden lg:block border-t bg-muted/30 mt-auto">
@@ -247,38 +270,44 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </footer>
 
-      {/* Mobile bottom navigation */}
+      {/* Mobile bottom navigation with morph indicator */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bottom-nav border-t">
-        <div className="flex items-center justify-around px-1 py-1.5">
-          {mobileNavItems.map(({ path, label, icon: Icon }) => {
-            const isActive = location.pathname === path;
-            return (
-              <Link
-                key={path}
-                to={path}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all min-w-[56px]",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                )}
-              >
-                <div className={cn(
-                  "p-1.5 rounded-xl transition-all",
-                  isActive && "bg-primary/10"
-                )}>
-                  <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
-                </div>
-                <span className={cn(
-                  "text-[10px] font-medium",
-                  isActive && "font-semibold"
-                )}>
-                  {label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <LayoutGroup>
+          <div className="flex items-center justify-around px-1 py-1.5">
+            {mobileNavItems.map(({ path, label, icon: Icon }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={cn(
+                    "relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl min-w-[56px]",
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <div className="relative p-1.5 rounded-xl">
+                    {isActive && (
+                      <motion.div
+                        layoutId="mobile-nav-pill"
+                        className="absolute inset-0 bg-primary/10 rounded-xl"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <Icon className={cn("h-5 w-5 relative z-10", isActive && "stroke-[2.5px]")} />
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-medium",
+                    isActive && "font-semibold"
+                  )}>
+                    {label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </LayoutGroup>
         {/* Safe area for notched phones */}
         <div className="h-[env(safe-area-inset-bottom)]" />
       </nav>

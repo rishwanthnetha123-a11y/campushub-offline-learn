@@ -156,7 +156,7 @@ export const PDFViewer = ({
 
       {/* PDF View */}
       <div className={cn(
-        "flex-1 min-h-[500px] flex items-start justify-center overflow-auto p-4 transition-colors duration-300",
+        "flex-1 min-h-[500px] relative flex items-start justify-center overflow-auto p-4 transition-colors duration-300",
         darkMode ? "bg-background" : "bg-muted-foreground/5"
       )}>
         {isLoading && (
@@ -169,16 +169,18 @@ export const PDFViewer = ({
         )}
 
         <div className={cn(
-          "transition-all duration-300 rounded-lg shadow-lg overflow-hidden",
+          "transition-all duration-300 rounded-lg shadow-lg overflow-hidden w-full h-full",
           darkMode && "invert hue-rotate-180"
         )}
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
         >
           <iframe
-            src={`${url}#page=${currentPage}`}
-            className="w-[800px] h-[1000px] bg-white border-0"
+            src={`https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true#page=${currentPage}`}
+            className="w-full min-h-[700px] bg-white border-0"
             onLoad={() => setIsLoading(false)}
+            onError={() => setIsLoading(false)}
             title={title}
+            sandbox="allow-scripts allow-same-origin allow-popups"
           />
         </div>
       </div>

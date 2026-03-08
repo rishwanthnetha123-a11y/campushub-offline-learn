@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Mail, Copy, Check, Clock, Loader2, Send } from 'lucide-react';
+import { UserPlus, Mail, Copy, Check, Clock, Loader2, Send, AlertTriangle, Building2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { RoleInvite } from '@/lib/supabase';
+
+interface UserWithMissingDept {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: string;
+  department_id: string | null;
+}
 
 export function AdminRoleInvites() {
   const { toast } = useToast();
@@ -20,6 +28,9 @@ export function AdminRoleInvites() {
   const [role, setRole] = useState<'hod' | 'faculty'>('faculty');
   const [departmentId, setDepartmentId] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [usersNeedingDept, setUsersNeedingDept] = useState<UserWithMissingDept[]>([]);
+  const [assigningDept, setAssigningDept] = useState<Record<string, string>>({});
+  const [savingDept, setSavingDept] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -34,10 +45,55 @@ export function AdminRoleInvites() {
 
       setInvites(inviteRes.data?.invites || []);
       setDepartments(deptRes.data || []);
+
+      // Fetch HODs/Faculty missing department
+      const { data: roles } = await (supabase as any)
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['hod', 'faculty']);
+
+      if (roles && roles.length > 0) {
+        const userIds = roles.map((r: any) => r.user_id);
+        const { data: profiles } = await (supabase as any)
+          .from('profiles')
+          .select('id, full_name, email, department_id')
+          .in('id', userIds);
+
+        const roleMap: Record<string, string> = {};
+        roles.forEach((r: any) => { roleMap[r.user_id] = r.role; });
+
+        const missing = (profiles || [])
+          .filter((p: any) => !p.department_id)
+          .map((p: any) => ({ ...p, role: roleMap[p.id] || 'unknown' }));
+
+        setUsersNeedingDept(missing);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const assignDepartment = async (userId: string) => {
+    const deptId = assigningDept[userId];
+    if (!deptId) {
+      toast({ title: 'Select a department first', variant: 'destructive' });
+      return;
+    }
+    setSavingDept(userId);
+    try {
+      const { error } = await (supabase as any)
+        .from('profiles')
+        .update({ department_id: deptId })
+        .eq('id', userId);
+      if (error) throw error;
+      toast({ title: 'Department assigned successfully!' });
+      setUsersNeedingDept(prev => prev.filter(u => u.id !== userId));
+    } catch (err: any) {
+      toast({ title: 'Failed to assign', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingDept(null);
     }
   };
 
@@ -89,6 +145,50 @@ export function AdminRoleInvites() {
 
   return (
     <div className="space-y-6">
+      {/* Missing Department Alert */}
+      {usersNeedingDept.length > 0 && (
+        <Card className="border-warning/50 bg-warning/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-warning">
+              <AlertTriangle className="h-5 w-5" /> Users Missing Department
+            </CardTitle>
+            <CardDescription>These HODs/Faculty accepted their invite but don't have a department assigned. Assign one manually.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {usersNeedingDept.map(user => (
+              <div key={user.id} className="flex items-center justify-between gap-3 p-3 border rounded-lg bg-background">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{user.full_name || 'Unnamed'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs shrink-0">{user.role}</Badge>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Select
+                    value={assigningDept[user.id] || ''}
+                    onValueChange={v => setAssigningDept(prev => ({ ...prev, [user.id]: v }))}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map(d => (
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={() => assignDepartment(user.id)} disabled={savingDept === user.id}>
+                    {savingDept === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Assign'}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> Invite HOD / Faculty</CardTitle>

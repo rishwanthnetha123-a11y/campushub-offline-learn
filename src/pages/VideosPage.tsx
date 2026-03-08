@@ -101,6 +101,7 @@ const VideosPage = () => {
           <Bookmark className={`h-4 w-4 ${showBookmarked ? 'fill-current' : ''}`} />
           Bookmarked ({bookmarkedIds.size})
         </Button>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">

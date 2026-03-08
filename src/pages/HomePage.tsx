@@ -6,6 +6,7 @@ import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { demoVideos, demoResources } from '@/data/demo-content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { NoticesBanner } from '@/components/NoticesBanner';
 
 const HomePage = () => {
   const { getStorageStats, isOnline, downloads, progress } = useOfflineStorage();
@@ -68,6 +69,9 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Notices Banner */}
+      <NoticesBanner />
 
       {/* Stats Grid */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">

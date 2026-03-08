@@ -57,6 +57,7 @@ const StudentDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
   const [hasClass, setHasClass] = useState(true);
+  const [classStrength, setClassStrength] = useState<number>(0);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -71,6 +72,9 @@ const StudentDashboardPage = () => {
 
       const { data: cls } = await supabase.from('classes').select('year, section, departments(name)').eq('id', prof.class_id).single();
       setClassInfo(cls as any);
+
+      const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('class_id', prof.class_id);
+      setClassStrength(count ?? 0);
 
       const { data: att } = await supabase.from('attendance').select('id, date, status, subject_id, subjects(subject_name, subject_code), profiles!attendance_marked_by_fkey(full_name)').eq('student_id', user.id).order('date', { ascending: false });
       setAttendance((att as any) || []);
@@ -140,6 +144,7 @@ const StudentDashboardPage = () => {
     { icon: BarChart3, label: 'Avg. Marks', value: `${avgPercent}%`, color: 'text-success', iconBg: 'bg-success/10', borderColor: 'border-success/20' },
     { icon: BookOpen, label: 'Subjects', value: `${Object.keys(marksBySubject).length || '—'}`, color: 'text-accent', iconBg: 'bg-accent/10', borderColor: 'border-accent/20' },
     { icon: Clock, label: 'Classes/Week', value: `${schedule.length || '—'}`, color: 'text-muted-foreground', iconBg: 'bg-muted', borderColor: 'border-border' },
+    { icon: Users, label: 'Class Strength', value: `${classStrength || '—'}`, color: 'text-primary', iconBg: 'bg-primary/10', borderColor: 'border-primary/20' },
   ];
 
   return (
@@ -165,7 +170,7 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* Summary Cards — enhanced */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {statCards.map(({ icon: Icon, label, value, color, iconBg, borderColor }) => (
           <Card key={label} className={cn("card-elevated stat-card border", borderColor)}>
             <CardContent className="pt-5 pb-4 flex items-center gap-4">

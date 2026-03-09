@@ -83,10 +83,21 @@ export function HodVideos() {
     } finally { setDeletingId(null); }
   };
 
+  const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+  const ALLOWED_TYPES = ['video/mp4', 'video/webm', 'video/x-matroska'];
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('video/')) setSelectedFile(file);
-    else toast({ title: 'Invalid file', description: 'Please select a video file.', variant: 'destructive' });
+    if (!file) return;
+    if (!file.type.startsWith('video/') && !ALLOWED_TYPES.includes(file.type)) {
+      toast({ title: 'Invalid file type', description: 'Only MP4, WebM, and MKV files are allowed.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: 'File too large', description: 'Maximum file size is 500MB.', variant: 'destructive' });
+      return;
+    }
+    setSelectedFile(file);
   };
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

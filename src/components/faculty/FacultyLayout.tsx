@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { path: '/faculty', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/faculty/videos', label: 'My Videos', icon: Video },
+  { path: '/faculty/analytics', label: 'Engagement', icon: BarChart3 },
 ];
 
 export function FacultyLayout({ children }: { children: ReactNode }) {

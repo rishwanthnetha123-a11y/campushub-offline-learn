@@ -123,7 +123,7 @@ export function HodVideos() {
   const formatDuration = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 
   const handleUpload = async () => {
-    if (!selectedFile || !form.title || !form.subject_id) {
+    if (!selectedFile || !form.title || !form.subject_id || !user) {
       toast({ title: 'Missing info', description: 'Fill required fields and select a video.', variant: 'destructive' });
       return;
     }

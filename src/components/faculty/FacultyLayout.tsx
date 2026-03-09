@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, LogOut, ArrowLeft, Video } from 'lucide-react';
+import { LayoutDashboard, LogOut, ArrowLeft, Video, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/contexts/AuthContext';
 import campusHubLogo from '@/assets/campus-hub-logo.png';

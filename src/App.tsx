@@ -33,6 +33,7 @@ import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentProfilePage from "./pages/StudentProfilePage";
 import HodVideosPage from "./pages/HodVideosPage";
 import FacultyVideosPage from "./pages/FacultyVideosPage";
+import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
 import NotFound from "./pages/NotFound";
 

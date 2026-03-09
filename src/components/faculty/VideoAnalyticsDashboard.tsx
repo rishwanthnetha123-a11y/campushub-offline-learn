@@ -102,11 +102,11 @@ export function VideoAnalyticsDashboard() {
     const profileMap = new Map((profiles || []).map((p: any) => [p.id, p] as [string, any]));
     const videoMap = new Map((vids || []).map((v: any) => [v.id, v] as [string, any]));
 
-    const enriched: VideoAnalyticsRow[] = (data as any[]).map(d => ({
+    const enriched: VideoAnalyticsRow[] = (data as any[]).map((d: any) => ({
       ...d,
-      student_name: profileMap.get(d.student_id)?.full_name || 'Unknown',
-      student_email: profileMap.get(d.student_id)?.email || '',
-      video_title: videoMap.get(d.video_id)?.title || 'Unknown',
+      student_name: (profileMap.get(d.student_id) as any)?.full_name || 'Unknown',
+      student_email: (profileMap.get(d.student_id) as any)?.email || '',
+      video_title: (videoMap.get(d.video_id) as any)?.title || 'Unknown',
     }));
 
     setAnalytics(enriched);

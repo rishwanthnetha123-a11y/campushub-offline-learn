@@ -31,11 +31,13 @@ export const VideoPlayer = ({
   src,
   title,
   poster,
+  videoId,
   onProgress,
   onComplete,
   initialTime = 0,
   className,
 }: VideoPlayerProps) => {
+  const { trackTimeUpdate, trackPlay, trackPause } = useVideoEngagement(videoId);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();

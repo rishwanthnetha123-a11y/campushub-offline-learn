@@ -40,6 +40,7 @@ interface DBVideo {
 
 export function HodVideos() {
   const { toast } = useToast();
+  const { user } = useAuthContext();
   const { departmentId } = useHodDepartment();
   const { subjects } = useDepartmentSubjects(departmentId);
   const fileInputRef = useRef<HTMLInputElement>(null);

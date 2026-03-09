@@ -72,6 +72,7 @@ export const VideoPlayer = ({
       if (!isSeeking) setCurrentTime(video.currentTime);
       const progress = (video.currentTime / video.duration) * 100;
       onProgress?.(progress, video.currentTime);
+      trackTimeUpdate(video.currentTime, video.duration);
       if (progress >= 90 && !completedRef.current) {
         completedRef.current = true;
         onComplete?.();

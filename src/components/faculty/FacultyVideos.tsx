@@ -234,7 +234,13 @@ export function FacultyVideos() {
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${selectedFile ? 'border-success bg-success/5' : 'border-muted-foreground/25 hover:border-primary'}`}
               onClick={() => fileInputRef.current?.click()}
             >
-              <input ref={fileInputRef} type="file" accept="video/*" onChange={e => { const f = e.target.files?.[0]; if (f?.type.startsWith('video/')) setSelectedFile(f); }} className="hidden" />
+              <input ref={fileInputRef} type="file" accept="video/mp4,video/webm,video/x-matroska" onChange={e => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                if (!f.type.startsWith('video/')) { toast({ title: 'Invalid file type', description: 'Only MP4, WebM, and MKV files are allowed.', variant: 'destructive' }); return; }
+                if (f.size > 500 * 1024 * 1024) { toast({ title: 'File too large', description: 'Maximum file size is 500MB.', variant: 'destructive' }); return; }
+                setSelectedFile(f);
+              }} className="hidden" />
               {selectedFile ? (
                 <div className="flex items-center justify-center gap-3">
                   <FileVideo className="h-8 w-8 text-success" />

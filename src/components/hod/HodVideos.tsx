@@ -171,6 +171,7 @@ export function HodVideos() {
         file_size: formatFileSize(selectedFile.size),
         file_size_bytes: selectedFile.size,
         is_active: true,
+        uploaded_by: user.id,
       });
       if (dbError) throw dbError;
       setUploadProgress(100);

@@ -91,8 +91,8 @@ export const VideoPlayer = ({
       onComplete?.();
     };
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => { setIsPlaying(true); trackPlay(); };
+    const handlePause = () => { setIsPlaying(false); trackPause(); };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);

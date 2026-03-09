@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useVideoEngagement } from '@/hooks/use-video-engagement';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   SkipBack, SkipForward, PictureInPicture2, Gauge
@@ -17,6 +18,7 @@ interface VideoPlayerProps {
   src: string;
   title: string;
   poster?: string;
+  videoId?: string;
   onProgress?: (progress: number, currentTime: number) => void;
   onComplete?: () => void;
   initialTime?: number;
@@ -29,11 +31,13 @@ export const VideoPlayer = ({
   src,
   title,
   poster,
+  videoId,
   onProgress,
   onComplete,
   initialTime = 0,
   className,
 }: VideoPlayerProps) => {
+  const { trackTimeUpdate, trackPlay, trackPause } = useVideoEngagement(videoId);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
@@ -68,6 +72,7 @@ export const VideoPlayer = ({
       if (!isSeeking) setCurrentTime(video.currentTime);
       const progress = (video.currentTime / video.duration) * 100;
       onProgress?.(progress, video.currentTime);
+      trackTimeUpdate(video.currentTime, video.duration);
       if (progress >= 90 && !completedRef.current) {
         completedRef.current = true;
         onComplete?.();
@@ -86,8 +91,8 @@ export const VideoPlayer = ({
       onComplete?.();
     };
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => { setIsPlaying(true); trackPlay(); };
+    const handlePause = () => { setIsPlaying(false); trackPause(); };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);

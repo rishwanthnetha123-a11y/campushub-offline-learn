@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, Video, Loader2, X, FileVideo, Trash2, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES, getLanguageName } from '@/lib/languages';
 import { useHodDepartment, useDepartmentSubjects } from '@/hooks/use-hod';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface VideoForm {
   title: string;
@@ -39,6 +40,7 @@ interface DBVideo {
 
 export function HodVideos() {
   const { toast } = useToast();
+  const { user } = useAuthContext();
   const { departmentId } = useHodDepartment();
   const { subjects } = useDepartmentSubjects(departmentId);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,10 +83,21 @@ export function HodVideos() {
     } finally { setDeletingId(null); }
   };
 
+  const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+  const ALLOWED_TYPES = ['video/mp4', 'video/webm', 'video/x-matroska'];
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('video/')) setSelectedFile(file);
-    else toast({ title: 'Invalid file', description: 'Please select a video file.', variant: 'destructive' });
+    if (!file) return;
+    if (!file.type.startsWith('video/') && !ALLOWED_TYPES.includes(file.type)) {
+      toast({ title: 'Invalid file type', description: 'Only MP4, WebM, and MKV files are allowed.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: 'File too large', description: 'Maximum file size is 500MB.', variant: 'destructive' });
+      return;
+    }
+    setSelectedFile(file);
   };
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,7 +123,7 @@ export function HodVideos() {
   const formatDuration = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 
   const handleUpload = async () => {
-    if (!selectedFile || !form.title || !form.subject_id) {
+    if (!selectedFile || !form.title || !form.subject_id || !user) {
       toast({ title: 'Missing info', description: 'Fill required fields and select a video.', variant: 'destructive' });
       return;
     }
@@ -158,6 +171,7 @@ export function HodVideos() {
         file_size: formatFileSize(selectedFile.size),
         file_size_bytes: selectedFile.size,
         is_active: true,
+        uploaded_by: user.id,
       });
       if (dbError) throw dbError;
       setUploadProgress(100);

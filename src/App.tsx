@@ -33,6 +33,7 @@ import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentProfilePage from "./pages/StudentProfilePage";
 import HodVideosPage from "./pages/HodVideosPage";
 import FacultyVideosPage from "./pages/FacultyVideosPage";
+import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/faculty" element={<FacultyDashboardPage />} />
               <Route path="/faculty/class/:classId" element={<FacultyClassWorkspacePage />} />
               <Route path="/faculty/videos" element={<FacultyVideosPage />} />
+              <Route path="/faculty/analytics" element={<FacultyAnalyticsPage />} />
               <Route path="/*" element={
                 <AppLayout>
                   <Routes>

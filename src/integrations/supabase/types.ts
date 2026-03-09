@@ -954,6 +954,62 @@ export type Database = {
         }
         Relationships: []
       }
+      video_analytics: {
+        Row: {
+          attention_score: number
+          completion_percentage: number
+          created_at: string
+          engagement_level: string
+          id: string
+          idle_time: number
+          last_position: number
+          skip_count: number
+          student_id: string
+          total_duration: number
+          updated_at: string
+          video_id: string
+          watch_time: number
+        }
+        Insert: {
+          attention_score?: number
+          completion_percentage?: number
+          created_at?: string
+          engagement_level?: string
+          id?: string
+          idle_time?: number
+          last_position?: number
+          skip_count?: number
+          student_id: string
+          total_duration?: number
+          updated_at?: string
+          video_id: string
+          watch_time?: number
+        }
+        Update: {
+          attention_score?: number
+          completion_percentage?: number
+          created_at?: string
+          engagement_level?: string
+          id?: string
+          idle_time?: number
+          last_position?: number
+          skip_count?: number
+          student_id?: string
+          total_duration?: number
+          updated_at?: string
+          video_id?: string
+          watch_time?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_analytics_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           created_at: string

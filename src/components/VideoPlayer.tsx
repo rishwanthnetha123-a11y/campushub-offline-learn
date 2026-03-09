@@ -17,6 +17,7 @@ interface VideoPlayerProps {
   src: string;
   title: string;
   poster?: string;
+  videoId?: string;
   onProgress?: (progress: number, currentTime: number) => void;
   onComplete?: () => void;
   initialTime?: number;

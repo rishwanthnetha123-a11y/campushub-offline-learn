@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { CONTENT_LANGUAGES, getLanguageName } from '@/lib/languages';
 import { useHodDepartment, useDepartmentSubjects } from '@/hooks/use-hod';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface VideoForm {
   title: string;

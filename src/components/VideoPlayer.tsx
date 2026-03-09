@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useVideoEngagement } from '@/hooks/use-video-engagement';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   SkipBack, SkipForward, PictureInPicture2, Gauge

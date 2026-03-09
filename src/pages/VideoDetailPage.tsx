@@ -157,6 +157,7 @@ const VideoDetailPage = () => {
               src={videoSrc}
               title={video.title}
               poster={video.thumbnailUrl}
+              videoId={video.id}
               onProgress={handleProgress}
               onComplete={handleComplete}
               initialTime={progress?.lastPosition}

@@ -99,8 +99,8 @@ export function VideoAnalyticsDashboard() {
       (supabase as any).from('videos').select('id, title').in('id', vidIds),
     ]);
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
-    const videoMap = new Map((vids || []).map((v: any) => [v.id, v]));
+    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p] as [string, any]));
+    const videoMap = new Map((vids || []).map((v: any) => [v.id, v] as [string, any]));
 
     const enriched: VideoAnalyticsRow[] = (data as any[]).map(d => ({
       ...d,

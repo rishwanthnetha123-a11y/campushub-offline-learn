@@ -192,7 +192,8 @@ export function AdminStudents() {
 
   const filteredStudents = students.filter(student =>
     student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    student.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.roll_no?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Leaderboard - top 5 by quiz score

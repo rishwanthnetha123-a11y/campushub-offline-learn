@@ -12,7 +12,7 @@ interface AuthContextType {
   isFaculty: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ data: any; error: any }>;
+  signUp: (email: string, password: string, fullName?: string, metadata?: Record<string, string>) => Promise<{ data: any; error: any }>;
   signOut: () => Promise<{ error: any }>;
   refreshAdminStatus: () => Promise<void>;
   refreshRoles: () => Promise<void>;

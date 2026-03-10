@@ -64,13 +64,13 @@ export function useAuth() {
     return { data, error };
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName?: string, metadata?: Record<string, string>) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: fullName },
+        data: { full_name: fullName, ...metadata },
       },
     });
     return { data, error };

@@ -296,7 +296,11 @@ export function AdminStudents() {
                       <div className="flex items-center gap-4">
                         <div className="text-left">
                           <p className="font-medium">{student.full_name || 'Unknown'}</p>
-                          <p className="text-sm text-muted-foreground">{student.email}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {student.roll_no && <span className="font-mono mr-2">{student.roll_no}</span>}
+                            {student.email}
+                            {student.phone && <span className="ml-2">• {student.phone}</span>}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">

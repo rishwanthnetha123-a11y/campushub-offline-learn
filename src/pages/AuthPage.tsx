@@ -60,19 +60,14 @@ const AuthPage = () => {
     }
     setIsLoading(true);
 
-    const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+    const { data, error } = await signUp(formData.email, formData.password, formData.fullName, {
+      roll_no: formData.rollNo.trim(),
+      phone: formData.phone.trim() || '',
+    });
     
     if (error) {
       toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
     } else {
-      // Save roll_no and phone to profile after signup
-      const userId = data?.user?.id;
-      if (userId) {
-        await (supabase as any).from('profiles').update({
-          roll_no: formData.rollNo.trim(),
-          phone: formData.phone.trim() || null,
-        }).eq('id', userId);
-      }
       toast({ title: 'Account created!', description: 'Please check your email to verify your account.' });
     }
     

@@ -239,8 +239,17 @@ export const VideoPlayer = ({
   const handleSeek = (value: number[]) => {
     if (videoRef.current) {
       const time = (value[0] / 100) * duration;
-      videoRef.current.currentTime = time;
-      setCurrentTime(time);
+      const maxAllowed = maxWatchedRef.current + 2;
+      if (time > maxAllowed) {
+        // Snap to max watched position
+        videoRef.current.currentTime = maxWatchedRef.current;
+        setCurrentTime(maxWatchedRef.current);
+        setAntiSkipWarning(true);
+        setTimeout(() => setAntiSkipWarning(false), 3000);
+      } else {
+        videoRef.current.currentTime = time;
+        setCurrentTime(time);
+      }
     }
   };
 

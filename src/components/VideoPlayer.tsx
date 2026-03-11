@@ -55,6 +55,8 @@ export const VideoPlayer = ({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const completedRef = useRef(false);
+  const maxWatchedRef = useRef(initialTime || 0);
+  const [antiSkipWarning, setAntiSkipWarning] = useState(false);
 
   // Video event listeners
   useEffect(() => {

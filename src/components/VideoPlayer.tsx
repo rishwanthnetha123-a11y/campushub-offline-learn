@@ -72,12 +72,27 @@ export const VideoPlayer = ({
 
     const handleTimeUpdate = () => {
       if (!isSeeking) setCurrentTime(video.currentTime);
+      // Update max watched position
+      if (video.currentTime > maxWatchedRef.current) {
+        maxWatchedRef.current = video.currentTime;
+      }
       const progress = (video.currentTime / video.duration) * 100;
       onProgress?.(progress, video.currentTime);
       trackTimeUpdate(video.currentTime, video.duration);
       if (progress >= 90 && !completedRef.current) {
         completedRef.current = true;
         onComplete?.();
+      }
+    };
+
+    // Anti-skip: prevent seeking beyond max watched position
+    const handleSeeking = () => {
+      const maxAllowed = maxWatchedRef.current + 2; // 2s grace
+      if (video.currentTime > maxAllowed) {
+        video.currentTime = maxWatchedRef.current;
+        setCurrentTime(maxWatchedRef.current);
+        setAntiSkipWarning(true);
+        setTimeout(() => setAntiSkipWarning(false), 3000);
       }
     };
 

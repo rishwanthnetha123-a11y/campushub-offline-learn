@@ -58,14 +58,24 @@ export function ManageStudents({ departmentId, departmentName }: Props) {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [{ data: cls }, { data: deptStudents }, { data: noDepStudents }] = await Promise.all([
+    // Fetch classes, all dept profiles, unassigned profiles, and non-student role user IDs
+    const [{ data: cls }, { data: deptProfiles }, { data: noDepProfiles }, { data: roleData }] = await Promise.all([
       (supabase as any).from('classes').select('id, year, section').eq('department_id', departmentId).order('year'),
       (supabase as any).from('profiles').select('id, full_name, email, roll_no, phone, class_id').eq('department_id', departmentId).order('full_name'),
       (supabase as any).from('profiles').select('id, full_name, email, roll_no, phone, class_id').is('department_id', null).order('full_name'),
+      (supabase as any).from('user_roles').select('user_id, role'),
     ]);
+
+    // Build a set of user IDs that have faculty, hod, or admin roles
+    const nonStudentIds = new Set(
+      (roleData || [])
+        .filter((r: any) => r.role === 'faculty' || r.role === 'hod' || r.role === 'admin')
+        .map((r: any) => r.user_id)
+    );
+
     setClasses(cls || []);
-    setStudents(deptStudents || []);
-    setUnassigned(noDepStudents || []);
+    setStudents((deptProfiles || []).filter((p: any) => !nonStudentIds.has(p.id)));
+    setUnassigned((noDepProfiles || []).filter((p: any) => !nonStudentIds.has(p.id)));
     setLoading(false);
   }, [departmentId]);
 

@@ -117,6 +117,7 @@ export const VideoPlayer = ({
     video.addEventListener('ended', handleEnded);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('seeking', handleSeeking);
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -125,6 +126,7 @@ export const VideoPlayer = ({
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('seeking', handleSeeking);
     };
   }, [initialTime, onProgress, onComplete, isSeeking]);
 

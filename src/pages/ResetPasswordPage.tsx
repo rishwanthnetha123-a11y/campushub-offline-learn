@@ -16,20 +16,37 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [done, setDone] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Listen for PASSWORD_RECOVERY event from the hash fragment
+    const hash = window.location.hash;
+    
+    // Check for error in hash (expired/invalid link)
+    if (hash.includes('error=')) {
+      const params = new URLSearchParams(hash.replace('#', ''));
+      const errorDesc = params.get('error_description') || 'The reset link is invalid or has expired.';
+      setLinkError(errorDesc.replace(/\+/g, ' '));
+      return;
+    }
+
+    // Listen for PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecovery(true);
       }
     });
 
-    // Also check hash for type=recovery
-    const hash = window.location.hash;
+    // Check hash for type=recovery
     if (hash.includes('type=recovery')) {
       setIsRecovery(true);
     }
+
+    // Also check if user already has a session (recovery link already processed)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsRecovery(true);
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -55,6 +72,25 @@ const ResetPasswordPage = () => {
     }
     setIsLoading(false);
   };
+
+  if (linkError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <CardTitle className="text-xl text-destructive">Link Expired</CardTitle>
+            <CardDescription>{linkError}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate('/auth')} className="w-full">
+              Back to Sign In
+            </Button>
+            <p className="text-sm text-muted-foreground mt-3">Request a new password reset from the login page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!isRecovery && !done) {
     return (

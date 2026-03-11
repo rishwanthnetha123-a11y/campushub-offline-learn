@@ -51,6 +51,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/accept-invite" element={<AcceptInvitePage />} />
               {/* HOD routes */}

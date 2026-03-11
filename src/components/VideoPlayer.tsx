@@ -378,6 +378,24 @@ export const VideoPlayer = ({
         </div>
       )}
 
+      {/* Anti-skip warning */}
+      {antiSkipWarning && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-destructive/90 text-destructive-foreground text-sm px-5 py-3 rounded-lg backdrop-blur-sm z-10 font-medium shadow-lg animate-fade-in">
+          ⚠️ You can't skip ahead — watch the video to proceed
+        </div>
+      )}
+
+      {/* Max watched indicator */}
+      {duration > 0 && (
+        <div
+          className="absolute bottom-[52px] h-0.5 bg-accent/60 pointer-events-none z-10"
+          style={{
+            left: '16px',
+            width: `calc(${Math.min((maxWatchedRef.current / duration) * 100, 100)}% - 32px)`,
+          }}
+        />
+      )}
+
       {/* PiP badge */}
       {isPiP && (
         <div className="absolute top-4 left-4 bg-primary/80 text-primary-foreground text-xs px-3 py-1.5 rounded-full">

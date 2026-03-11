@@ -273,7 +273,18 @@ export const VideoPlayer = ({
 
   const skip = (seconds: number) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + seconds));
+      const target = videoRef.current.currentTime + seconds;
+      if (seconds > 0) {
+        // Forward skip limited to max watched
+        const maxAllowed = maxWatchedRef.current + 2;
+        if (target > maxAllowed) {
+          videoRef.current.currentTime = maxWatchedRef.current;
+          setAntiSkipWarning(true);
+          setTimeout(() => setAntiSkipWarning(false), 3000);
+          return;
+        }
+      }
+      videoRef.current.currentTime = Math.max(0, Math.min(duration, target));
     }
   };
 

@@ -73,6 +73,25 @@ const ResetPasswordPage = () => {
     setIsLoading(false);
   };
 
+  if (linkError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <CardTitle className="text-xl text-destructive">Link Expired</CardTitle>
+            <CardDescription>{linkError}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate('/auth')} className="w-full">
+              Back to Sign In
+            </Button>
+            <p className="text-sm text-muted-foreground mt-3">Request a new password reset from the login page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!isRecovery && !done) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">

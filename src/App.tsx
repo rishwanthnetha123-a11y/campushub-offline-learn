@@ -35,6 +35,7 @@ import HodVideosPage from "./pages/HodVideosPage";
 import FacultyVideosPage from "./pages/FacultyVideosPage";
 import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/accept-invite" element={<AcceptInvitePage />} />
               {/* HOD routes */}

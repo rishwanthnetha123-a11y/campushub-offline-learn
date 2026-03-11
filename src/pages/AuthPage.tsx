@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2, Phone, Hash } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, ArrowRight, Loader2, Phone, Hash, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,38 +17,28 @@ const AuthPage = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    phone: '',
-    rollNo: '',
+    email: '', password: '', fullName: '', phone: '', rollNo: '',
   });
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const redirectTo = searchParams.get('redirect') || '/';
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     const { error } = await signIn(formData.email, formData.password);
-    
     if (error) {
-      toast({
-        title: 'Sign in failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Sign in failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({
-        title: 'Welcome back!',
-        description: 'Successfully signed in.',
-      });
+      toast({ title: 'Welcome back!', description: 'Successfully signed in.' });
       navigate(redirectTo);
     }
-    
     setIsLoading(false);
   };
 
@@ -59,37 +49,43 @@ const AuthPage = () => {
       return;
     }
     setIsLoading(true);
-
     const { data, error } = await signUp(formData.email, formData.password, formData.fullName, {
       roll_no: formData.rollNo.trim(),
       phone: formData.phone.trim() || '',
     });
-    
     if (error) {
       toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Account created!', description: 'Please check your email to verify your account.' });
     }
-    
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) return;
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: 'Failed to send reset email', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Reset email sent!', description: 'Check your inbox for the password reset link.' });
+      setShowForgotPassword(false);
+    }
+    setResetLoading(false);
   };
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
-
     if (!otpSent) {
-      // Send OTP via Twilio edge function
       try {
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-            body: JSON.stringify({ phone, action: 'send' }),
-          }
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY }, body: JSON.stringify({ phone, action: 'send' }) }
         );
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to send OTP');
@@ -99,30 +95,21 @@ const AuthPage = () => {
         toast({ title: 'Failed to send OTP', description: err.message, variant: 'destructive' });
       }
     } else {
-      // Verify OTP via Twilio edge function
       try {
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
-            body: JSON.stringify({ phone, otp }),
-          }
+          { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY }, body: JSON.stringify({ phone, otp }) }
         );
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Verification failed');
-
-        // Sign in with the email/password returned by verify-otp
         const { error } = await signIn(data.email, data.temp_password);
         if (error) throw new Error(error.message);
-        
         toast({ title: 'Welcome!', description: 'Successfully signed in.' });
         navigate(redirectTo);
       } catch (err: any) {
         toast({ title: 'Verification failed', description: err.message, variant: 'destructive' });
       }
     }
-
     setIsLoading(false);
   };
 
@@ -144,190 +131,146 @@ const AuthPage = () => {
             </div>
           </div>
           <CardTitle className="text-2xl">CampusHub</CardTitle>
-          <CardDescription>
-            Offline-first learning for everyone
-          </CardDescription>
+          <CardDescription>Offline-first learning for everyone</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Auth Mode Toggle */}
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant={authMode === 'email' ? 'default' : 'outline'}
-              size="sm"
-              className="flex-1"
-              onClick={() => { setAuthMode('email'); setOtpSent(false); }}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Email
-            </Button>
-            <Button
-              variant={authMode === 'phone' ? 'default' : 'outline'}
-              size="sm"
-              className="flex-1"
-              onClick={() => { setAuthMode('phone'); setOtpSent(false); }}
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Mobile
-            </Button>
-          </div>
-
-          {authMode === 'phone' ? (
-            <form onSubmit={handlePhoneSignIn} className="space-y-4">
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="tel"
-                  placeholder="Mobile number (e.g., 9876543210)"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="pl-10"
-                  disabled={otpSent}
-                  required
-                />
+          {showForgotPassword ? (
+            <div className="space-y-4">
+              <div className="text-center mb-2">
+                <h3 className="text-lg font-semibold text-foreground">Reset Password</h3>
+                <p className="text-sm text-muted-foreground">Enter your email to receive a reset link</p>
               </div>
-              {otpSent && (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="pl-10"
-                    maxLength={6}
-                    required
+                    type="email" placeholder="Email address" value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)} className="pl-10" required
                   />
                 </div>
-              )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <ArrowRight className="h-4 w-4 mr-2" />
-                )}
-                {otpSent ? 'Verify OTP' : 'Send OTP'}
-              </Button>
-              {otpSent && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => { setOtpSent(false); setOtp(''); }}
-                >
-                  Change number
+                <Button type="submit" className="w-full" disabled={resetLoading}>
+                  {resetLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+                  Send Reset Link
                 </Button>
-              )}
-            </form>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => setShowForgotPassword(false)}>
+                  Back to Sign In
+                </Button>
+              </form>
+            </div>
           ) : (
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4 mt-4">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="Password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                    )}
-                    Sign In
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4 mt-4">
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="Full name"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="Roll Number (e.g., 21CS101)"
-                      value={formData.rollNo}
-                      onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+            <>
+              {/* Auth Mode Toggle */}
+              <div className="flex gap-2 mb-4">
+                <Button variant={authMode === 'email' ? 'default' : 'outline'} size="sm" className="flex-1"
+                  onClick={() => { setAuthMode('email'); setOtpSent(false); }}>
+                  <Mail className="h-4 w-4 mr-2" />Email
+                </Button>
+                <Button variant={authMode === 'phone' ? 'default' : 'outline'} size="sm" className="flex-1"
+                  onClick={() => { setAuthMode('phone'); setOtpSent(false); }}>
+                  <Phone className="h-4 w-4 mr-2" />Mobile
+                </Button>
+              </div>
+
+              {authMode === 'phone' ? (
+                <form onSubmit={handlePhoneSignIn} className="space-y-4">
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="tel"
-                      placeholder="Phone number (optional)"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="pl-10"
-                    />
+                    <Input type="tel" placeholder="Mobile number (e.g., 9876543210)" value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="pl-10" disabled={otpSent} required />
                   </div>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="Password (min 6 characters)"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="pl-10"
-                      minLength={6}
-                      required
-                    />
-                  </div>
+                  {otpSent && (
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input type="text" placeholder="Enter 6-digit OTP" value={otp}
+                        onChange={(e) => setOtp(e.target.value)} className="pl-10" maxLength={6} required />
+                    </div>
+                  )}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                    )}
-                    Create Account
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
+                    {otpSent ? 'Verify OTP' : 'Send OTP'}
                   </Button>
+                  {otpSent && (
+                    <Button type="button" variant="ghost" className="w-full" onClick={() => { setOtpSent(false); setOtp(''); }}>
+                      Change number
+                    </Button>
+                  )}
                 </form>
-              </TabsContent>
-            </Tabs>
+              ) : (
+                <Tabs defaultValue="signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="signin">
+                    <form onSubmit={handleSignIn} className="space-y-4 mt-4">
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="email" placeholder="Email address" value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="pl-10" required />
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type={showPassword ? 'text' : 'password'} placeholder="Password" value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="pl-10 pr-10" required />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <div className="flex justify-end">
+                        <button type="button" onClick={() => setShowForgotPassword(true)}
+                          className="text-sm text-primary hover:underline">
+                          Forgot password?
+                        </button>
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
+                        Sign In
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="signup">
+                    <form onSubmit={handleSignUp} className="space-y-4 mt-4">
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="text" placeholder="Full name" value={formData.fullName}
+                          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} className="pl-10" required />
+                      </div>
+                      <div className="relative">
+                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="text" placeholder="Roll Number (e.g., 21CS101)" value={formData.rollNo}
+                          onChange={(e) => setFormData({ ...formData, rollNo: e.target.value })} className="pl-10" required />
+                      </div>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="tel" placeholder="Phone number (optional)" value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="pl-10" />
+                      </div>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="email" placeholder="Email address" value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="pl-10" required />
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type={showPassword ? 'text' : 'password'} placeholder="Password (min 6 characters)" value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="pl-10 pr-10" minLength={6} required />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
+                        Create Account
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

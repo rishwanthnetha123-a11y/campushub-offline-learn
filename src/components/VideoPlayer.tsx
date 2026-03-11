@@ -55,6 +55,8 @@ export const VideoPlayer = ({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const completedRef = useRef(false);
+  const maxWatchedRef = useRef(initialTime || 0);
+  const [antiSkipWarning, setAntiSkipWarning] = useState(false);
 
   // Video event listeners
   useEffect(() => {
@@ -70,12 +72,27 @@ export const VideoPlayer = ({
 
     const handleTimeUpdate = () => {
       if (!isSeeking) setCurrentTime(video.currentTime);
+      // Update max watched position
+      if (video.currentTime > maxWatchedRef.current) {
+        maxWatchedRef.current = video.currentTime;
+      }
       const progress = (video.currentTime / video.duration) * 100;
       onProgress?.(progress, video.currentTime);
       trackTimeUpdate(video.currentTime, video.duration);
       if (progress >= 90 && !completedRef.current) {
         completedRef.current = true;
         onComplete?.();
+      }
+    };
+
+    // Anti-skip: prevent seeking beyond max watched position
+    const handleSeeking = () => {
+      const maxAllowed = maxWatchedRef.current + 2; // 2s grace
+      if (video.currentTime > maxAllowed) {
+        video.currentTime = maxWatchedRef.current;
+        setCurrentTime(maxWatchedRef.current);
+        setAntiSkipWarning(true);
+        setTimeout(() => setAntiSkipWarning(false), 3000);
       }
     };
 
@@ -100,6 +117,7 @@ export const VideoPlayer = ({
     video.addEventListener('ended', handleEnded);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('seeking', handleSeeking);
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -108,6 +126,7 @@ export const VideoPlayer = ({
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('seeking', handleSeeking);
     };
   }, [initialTime, onProgress, onComplete, isSeeking]);
 
@@ -220,8 +239,17 @@ export const VideoPlayer = ({
   const handleSeek = (value: number[]) => {
     if (videoRef.current) {
       const time = (value[0] / 100) * duration;
-      videoRef.current.currentTime = time;
-      setCurrentTime(time);
+      const maxAllowed = maxWatchedRef.current + 2;
+      if (time > maxAllowed) {
+        // Snap to max watched position
+        videoRef.current.currentTime = maxWatchedRef.current;
+        setCurrentTime(maxWatchedRef.current);
+        setAntiSkipWarning(true);
+        setTimeout(() => setAntiSkipWarning(false), 3000);
+      } else {
+        videoRef.current.currentTime = time;
+        setCurrentTime(time);
+      }
     }
   };
 
@@ -245,7 +273,18 @@ export const VideoPlayer = ({
 
   const skip = (seconds: number) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + seconds));
+      const target = videoRef.current.currentTime + seconds;
+      if (seconds > 0) {
+        // Forward skip limited to max watched
+        const maxAllowed = maxWatchedRef.current + 2;
+        if (target > maxAllowed) {
+          videoRef.current.currentTime = maxWatchedRef.current;
+          setAntiSkipWarning(true);
+          setTimeout(() => setAntiSkipWarning(false), 3000);
+          return;
+        }
+      }
+      videoRef.current.currentTime = Math.max(0, Math.min(duration, target));
     }
   };
 
@@ -337,6 +376,24 @@ export const VideoPlayer = ({
         <div className="absolute top-4 right-4 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
           {playbackSpeed}x
         </div>
+      )}
+
+      {/* Anti-skip warning */}
+      {antiSkipWarning && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-destructive/90 text-destructive-foreground text-sm px-5 py-3 rounded-lg backdrop-blur-sm z-10 font-medium shadow-lg animate-fade-in">
+          ⚠️ You can't skip ahead — watch the video to proceed
+        </div>
+      )}
+
+      {/* Max watched indicator */}
+      {duration > 0 && (
+        <div
+          className="absolute bottom-[52px] h-0.5 bg-accent/60 pointer-events-none z-10"
+          style={{
+            left: '16px',
+            width: `calc(${Math.min((maxWatchedRef.current / duration) * 100, 100)}% - 32px)`,
+          }}
+        />
       )}
 
       {/* PiP badge */}

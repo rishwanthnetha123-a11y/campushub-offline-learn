@@ -66,6 +66,20 @@ const VideosPage = () => {
         }));
         setDbVideos(mapped);
       }
+
+      // Fetch video analytics for badge display
+      if (user) {
+        const { data: analytics } = await (supabase as any)
+          .from('video_analytics')
+          .select('video_id, completion_percentage, attention_score, skip_count')
+          .eq('student_id', user.id);
+        if (analytics) {
+          const map: Record<string, any> = {};
+          analytics.forEach((a: any) => { map[a.video_id] = a; });
+          setVideoAnalytics(map);
+        }
+      }
+
       setLoading(false);
     };
     fetchVideos();

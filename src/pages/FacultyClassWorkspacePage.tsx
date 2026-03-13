@@ -12,6 +12,7 @@ import { AttendanceTab } from '@/components/faculty/AttendanceTab';
 import { MarksTab } from '@/components/faculty/MarksTab';
 import { StudentsTab } from '@/components/faculty/StudentsTab';
 import { AnalyticsTab } from '@/components/faculty/AnalyticsTab';
+import ExamsTab from '@/components/faculty/ExamsTab';
 
 export default function FacultyClassWorkspacePage() {
   const { classId } = useParams<{ classId: string }>();
@@ -81,6 +82,7 @@ export default function FacultyClassWorkspacePage() {
           <TabsList className="w-full justify-start">
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
             <TabsTrigger value="marks">Marks</TabsTrigger>
+            <TabsTrigger value="exams">Exams</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -90,6 +92,9 @@ export default function FacultyClassWorkspacePage() {
           </TabsContent>
           <TabsContent value="marks" className="mt-4">
             <MarksTab classId={classId!} />
+          </TabsContent>
+          <TabsContent value="exams" className="mt-4">
+            <ExamsTab classId={classId!} />
           </TabsContent>
           <TabsContent value="students" className="mt-4">
             <StudentsTab classId={classId!} />

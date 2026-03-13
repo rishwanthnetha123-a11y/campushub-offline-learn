@@ -14,13 +14,13 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecovery, setIsRecovery] = useState(false);
+  const [ready, setReady] = useState(false);
   const [done, setDone] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     const hash = window.location.hash;
-    
+
     // Check for error in hash (expired/invalid link)
     if (hash.includes('error=')) {
       const params = new URLSearchParams(hash.replace('#', ''));
@@ -29,22 +29,33 @@ const ResetPasswordPage = () => {
       return;
     }
 
-    // Listen for PASSWORD_RECOVERY event
+    // Listen for auth state changes - PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        setIsRecovery(true);
+        setReady(true);
       }
     });
 
-    // Check hash for type=recovery
+    // Also check if hash contains recovery token (type=recovery)
     if (hash.includes('type=recovery')) {
-      setIsRecovery(true);
+      // The auth client will process the hash automatically, just wait a bit
+      const timer = setTimeout(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) setReady(true);
+          else setLinkError('The reset link is invalid or has expired. Please request a new one.');
+        });
+      }, 2000);
+      return () => { subscription.unsubscribe(); clearTimeout(timer); };
     }
 
-    // Also check if user already has a session (recovery link already processed)
+    // If no hash at all, check if there's already a session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsRecovery(true);
+      if (session) setReady(true);
+      else {
+        // No recovery info - show error after a short wait
+        setTimeout(() => {
+          if (!ready) setLinkError('No recovery session found. Please request a new password reset link from the login page.');
+        }, 3000);
       }
     });
 
@@ -82,9 +93,7 @@ const ResetPasswordPage = () => {
             <CardDescription>{linkError}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/auth')} className="w-full">
-              Back to Sign In
-            </Button>
+            <Button onClick={() => navigate('/auth')} className="w-full">Back to Sign In</Button>
             <p className="text-sm text-muted-foreground mt-3">Request a new password reset from the login page.</p>
           </CardContent>
         </Card>
@@ -92,12 +101,12 @@ const ResetPasswordPage = () => {
     );
   }
 
-  if (!isRecovery && !done) {
+  if (!ready && !done) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8 pb-8">
-            <p className="text-muted-foreground mb-4">Loading recovery session...</p>
+            <p className="text-muted-foreground mb-4">Verifying your reset link...</p>
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
           </CardContent>
         </Card>

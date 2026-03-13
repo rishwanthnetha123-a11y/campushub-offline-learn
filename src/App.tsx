@@ -36,6 +36,7 @@ import FacultyVideosPage from "./pages/FacultyVideosPage";
 import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import StudentExamPage from "./pages/StudentExamPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,7 @@ const App = () => (
                     <Route path="/my-academics" element={<StudentDashboardPage />} />
                     <Route path="/profile" element={<StudentProfilePage />} />
                     <Route path="/notices" element={<NoticesPage />} />
+                    <Route path="/exams" element={<StudentExamPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AppLayout>

@@ -4,6 +4,7 @@ import { Search, Video as VideoIcon, Globe, Bookmark } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
+import { VideoBadge } from '@/components/VideoBadge';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { useBookmarks } from '@/hooks/use-bookmarks';
 import { subjects, demoQuizzes } from '@/data/demo-content';
@@ -26,6 +27,7 @@ const VideosPage = () => {
   const [showBookmarked, setShowBookmarked] = useState(false);
   const [dbVideos, setDbVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [videoAnalytics, setVideoAnalytics] = useState<Record<string, { completion_percentage: number; attention_score: number; skip_count: number }>>({});
 
   useEffect(() => {
     setSelectedLanguage(null);
@@ -64,6 +66,20 @@ const VideosPage = () => {
         }));
         setDbVideos(mapped);
       }
+
+      // Fetch video analytics for badge display
+      if (user) {
+        const { data: analytics } = await (supabase as any)
+          .from('video_analytics')
+          .select('video_id, completion_percentage, attention_score, skip_count')
+          .eq('student_id', user.id);
+        if (analytics) {
+          const map: Record<string, any> = {};
+          analytics.forEach((a: any) => { map[a.video_id] = a; });
+          setVideoAnalytics(map);
+        }
+      }
+
       setLoading(false);
     };
     fetchVideos();
@@ -140,13 +156,25 @@ const VideosPage = () => {
             const progress = getProgress(video.id);
             const quiz = demoQuizzes.find(q => q.contentId === video.id);
             const quizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
+            const analytics = videoAnalytics[video.id];
             return (
-              <ContentCard key={video.id} content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
-                quizCompleted={progress?.quizCompleted || false}
-                isBookmarked={isBookmarked(video.id)}
-                onBookmarkToggle={() => toggleBookmark(video.id)}
-                onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
-                onClick={() => navigate(`/video/${video.id}`)} />
+              <div key={video.id} className="relative">
+                {analytics && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <VideoBadge
+                      completionPercentage={analytics.completion_percentage}
+                      attentionScore={analytics.attention_score}
+                      skipCount={analytics.skip_count}
+                    />
+                  </div>
+                )}
+                <ContentCard content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
+                  quizCompleted={progress?.quizCompleted || false}
+                  isBookmarked={isBookmarked(video.id)}
+                  onBookmarkToggle={() => toggleBookmark(video.id)}
+                  onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
+                  onClick={() => navigate(`/video/${video.id}`)} />
+              </div>
             );
           })}
         </div>

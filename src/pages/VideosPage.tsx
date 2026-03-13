@@ -27,6 +27,7 @@ const VideosPage = () => {
   const [showBookmarked, setShowBookmarked] = useState(false);
   const [dbVideos, setDbVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [videoAnalytics, setVideoAnalytics] = useState<Record<string, { completion_percentage: number; attention_score: number; skip_count: number }>>({});
 
   useEffect(() => {
     setSelectedLanguage(null);

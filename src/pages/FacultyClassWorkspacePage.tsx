@@ -12,6 +12,7 @@ import { AttendanceTab } from '@/components/faculty/AttendanceTab';
 import { MarksTab } from '@/components/faculty/MarksTab';
 import { StudentsTab } from '@/components/faculty/StudentsTab';
 import { AnalyticsTab } from '@/components/faculty/AnalyticsTab';
+import ExamsTab from '@/components/faculty/ExamsTab';
 
 export default function FacultyClassWorkspacePage() {
   const { classId } = useParams<{ classId: string }>();

@@ -93,6 +93,9 @@ export default function FacultyClassWorkspacePage() {
           <TabsContent value="marks" className="mt-4">
             <MarksTab classId={classId!} />
           </TabsContent>
+          <TabsContent value="exams" className="mt-4">
+            <ExamsTab classId={classId!} />
+          </TabsContent>
           <TabsContent value="students" className="mt-4">
             <StudentsTab classId={classId!} />
           </TabsContent>

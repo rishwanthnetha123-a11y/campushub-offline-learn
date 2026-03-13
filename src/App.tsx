@@ -85,6 +85,7 @@ const App = () => (
                     <Route path="/my-academics" element={<StudentDashboardPage />} />
                     <Route path="/profile" element={<StudentProfilePage />} />
                     <Route path="/notices" element={<NoticesPage />} />
+                    <Route path="/exams" element={<StudentExamPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AppLayout>

@@ -82,6 +82,7 @@ export default function FacultyClassWorkspacePage() {
           <TabsList className="w-full justify-start">
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
             <TabsTrigger value="marks">Marks</TabsTrigger>
+            <TabsTrigger value="exams">Exams</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>

@@ -229,6 +229,143 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_submissions: {
+        Row: {
+          answers: Json
+          created_at: string
+          exam_id: string
+          graded_at: string | null
+          graded_by: string | null
+          grades: Json
+          id: string
+          is_graded: boolean
+          student_id: string
+          submitted_at: string
+          total_marks_obtained: number | null
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          exam_id: string
+          graded_at?: string | null
+          graded_by?: string | null
+          grades?: Json
+          id?: string
+          is_graded?: boolean
+          student_id: string
+          submitted_at?: string
+          total_marks_obtained?: number | null
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          exam_id?: string
+          graded_at?: string | null
+          graded_by?: string | null
+          grades?: Json
+          id?: string
+          is_graded?: boolean
+          student_id?: string
+          submitted_at?: string
+          total_marks_obtained?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_submissions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_submissions_graded_by_fkey"
+            columns: ["graded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_submissions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exams: {
+        Row: {
+          class_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number
+          ends_at: string | null
+          id: string
+          is_published: boolean
+          questions: Json
+          starts_at: string | null
+          subject_id: string
+          title: string
+          total_marks: number
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          is_published?: boolean
+          questions?: Json
+          starts_at?: string | null
+          subject_id: string
+          title: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          is_published?: boolean
+          questions?: Json
+          starts_at?: string | null
+          subject_id?: string
+          title?: string
+          total_marks?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exams_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faculty_classes: {
         Row: {
           class_id: string

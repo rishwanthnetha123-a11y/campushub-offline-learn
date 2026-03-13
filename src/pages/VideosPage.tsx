@@ -4,6 +4,7 @@ import { Search, Video as VideoIcon, Globe, Bookmark } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ContentCard';
+import { VideoBadge } from '@/components/VideoBadge';
 import { useOfflineStorage } from '@/hooks/use-offline-storage';
 import { useBookmarks } from '@/hooks/use-bookmarks';
 import { subjects, demoQuizzes } from '@/data/demo-content';

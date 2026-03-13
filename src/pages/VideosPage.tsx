@@ -156,13 +156,25 @@ const VideosPage = () => {
             const progress = getProgress(video.id);
             const quiz = demoQuizzes.find(q => q.contentId === video.id);
             const quizScore = quiz ? getBestQuizScore(quiz.id) : undefined;
+            const analytics = videoAnalytics[video.id];
             return (
-              <ContentCard key={video.id} content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
-                quizCompleted={progress?.quizCompleted || false}
-                isBookmarked={isBookmarked(video.id)}
-                onBookmarkToggle={() => toggleBookmark(video.id)}
-                onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
-                onClick={() => navigate(`/video/${video.id}`)} />
+              <div key={video.id} className="relative">
+                {analytics && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <VideoBadge
+                      completionPercentage={analytics.completion_percentage}
+                      attentionScore={analytics.attention_score}
+                      skipCount={analytics.skip_count}
+                    />
+                  </div>
+                )}
+                <ContentCard content={video} type="video" isDownloaded={isDownloaded(video.id)} learningProgress={progress?.progress}
+                  quizCompleted={progress?.quizCompleted || false}
+                  isBookmarked={isBookmarked(video.id)}
+                  onBookmarkToggle={() => toggleBookmark(video.id)}
+                  onDownload={() => markAsDownloaded(video.id, 'video')} onRemove={() => removeDownload(video.id)}
+                  onClick={() => navigate(`/video/${video.id}`)} />
+              </div>
             );
           })}
         </div>

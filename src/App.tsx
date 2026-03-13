@@ -36,6 +36,7 @@ import FacultyVideosPage from "./pages/FacultyVideosPage";
 import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import StudentExamPage from "./pages/StudentExamPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

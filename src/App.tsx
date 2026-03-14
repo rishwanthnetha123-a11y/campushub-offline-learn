@@ -37,6 +37,7 @@ import FacultyAnalyticsPage from "./pages/FacultyAnalyticsPage";
 import NoticesPage from "./pages/NoticesPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import StudentExamPage from "./pages/StudentExamPage";
+import ProjectToolsPage from "./pages/ProjectToolsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

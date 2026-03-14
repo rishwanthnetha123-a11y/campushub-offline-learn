@@ -128,6 +128,8 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
             <ConnectionStatus />
 
+            {user && <NotificationBell />}
+
             {isHod && (
               <Link to="/hod">
                 <Button variant="outline" size="sm" className="hidden md:flex gap-2 border-primary/20 text-primary hover:bg-primary/5">

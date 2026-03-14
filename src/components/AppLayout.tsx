@@ -2,8 +2,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
   Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap, Building2, UserCircle,
-  Sun, Moon
+  Sun, Moon, Sparkles
 } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';

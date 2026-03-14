@@ -116,6 +116,8 @@ export function AdminNotices() {
       if (error) throw error;
 
       toast({ title: 'Notice created', description: `"${form.title}" is now live.` });
+      // Notify all students
+      notifyAllStudents(`📢 ${form.title}`, form.description.slice(0, 200));
       setForm({ title: '', description: '', type: 'notice', priority: 'normal', starts_at: new Date().toISOString().slice(0, 16), expires_at: '' });
       setSelectedImage(null);
       setShowForm(false);

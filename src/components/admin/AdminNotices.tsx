@@ -13,6 +13,21 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 
+// Notify all students about a new notice
+async function notifyAllStudents(title: string, body: string) {
+  try {
+    const { data: roleData } = await (supabase as any).from('user_roles').select('user_id, role');
+    const nonStudentIds = new Set(
+      (roleData || []).filter((r: any) => ['faculty', 'hod', 'admin'].includes(r.role)).map((r: any) => r.user_id)
+    );
+    const { data: allProfiles } = await (supabase as any).from('profiles').select('id').limit(1000);
+    const studentIds = (allProfiles || []).filter((p: any) => !nonStudentIds.has(p.id)).map((p: any) => p.id);
+    if (studentIds.length === 0) return;
+    const notifs = studentIds.map((uid: string) => ({ user_id: uid, title, body, type: 'notice' }));
+    await (supabase as any).from('notifications').insert(notifs);
+  } catch (e) { console.error('Failed to send notice notifications:', e); }
+}
+
 interface Notice {
   id: string;
   title: string;
@@ -101,6 +116,8 @@ export function AdminNotices() {
       if (error) throw error;
 
       toast({ title: 'Notice created', description: `"${form.title}" is now live.` });
+      // Notify all students
+      notifyAllStudents(`📢 ${form.title}`, form.description.slice(0, 200));
       setForm({ title: '', description: '', type: 'notice', priority: 'normal', starts_at: new Date().toISOString().slice(0, 16), expires_at: '' });
       setSelectedImage(null);
       setShowForm(false);

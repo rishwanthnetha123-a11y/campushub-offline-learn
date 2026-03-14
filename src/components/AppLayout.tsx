@@ -2,8 +2,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, Video, FileText, Trophy, Download, Menu, X, MessageSquare, 
   Shield, LogIn, LogOut, TicketIcon, Globe, CalendarDays, GraduationCap, Building2, UserCircle,
-  Sun, Moon
+  Sun, Moon, Sparkles
 } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
@@ -33,6 +34,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { path: '/ask', label: t.nav_ask_ai, icon: MessageSquare },
     { path: '/study-plan', label: 'Study Plan', icon: CalendarDays },
     { path: '/exams', label: 'Exams', icon: FileText },
+    { path: '/project-tools', label: 'Project Tools', icon: Sparkles },
     { path: '/support', label: t.nav_support, icon: TicketIcon },
     { path: '/my-academics', label: 'My Academics', icon: GraduationCap },
     { path: '/progress', label: t.nav_progress, icon: Trophy },
@@ -125,6 +127,8 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
 
             <ConnectionStatus />
+
+            {user && <NotificationBell />}
 
             {isHod && (
               <Link to="/hod">

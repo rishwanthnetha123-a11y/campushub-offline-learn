@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, FileText, CheckCircle2, Clock, Users, Eye } from 'lucide-react';
 import ExamGrading from './ExamGrading';
+import { notifyClassStudents } from '@/hooks/use-notifications';
 
 interface Question {
   id: string;

@@ -171,9 +171,20 @@ export default function ExamsTab({ classId }: ExamsTabProps) {
   };
 
   const togglePublish = async (exam: Exam) => {
-    await (supabase as any).from('exams').update({ is_published: !exam.is_published }).eq('id', exam.id);
+    const newPublished = !exam.is_published;
+    await (supabase as any).from('exams').update({ is_published: newPublished }).eq('id', exam.id);
     fetchExams();
-    toast({ title: exam.is_published ? 'Exam unpublished' : 'Exam published to students!' });
+    toast({ title: newPublished ? 'Exam published to students!' : 'Exam unpublished' });
+
+    // Notify students when publishing
+    if (newPublished) {
+      notifyClassStudents(classId, {
+        title: '📝 New Exam Published',
+        body: `"${exam.title}" is now available. Duration: ${exam.duration_minutes} min, Total: ${exam.total_marks} marks.`,
+        type: 'exam',
+        reference_id: exam.id,
+      }).catch(console.error);
+    }
   };
 
   const deleteExam = async (id: string) => {
